@@ -1,22 +1,14 @@
 package com.lot.ordermanager.service
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
-import scala.reflect.runtime.universe._
-import scala.reflect.runtime.universe
+import scala.concurrent.duration.DurationInt
 
-import com.lot.ordermanager.dao.OrderDao
-import com.lot.ordermanager.service.OrderService
+import com.lot.ordermanager.model.OrderJsonProtocol
+import com.lot.user.service.UserService
 import com.typesafe.scalalogging.LazyLogging
 
 import akka.actor.Actor
 import akka.util.Timeout
-import spray.http.MediaTypes._
-import spray.http.StatusCodes._
-import spray.httpx.marshalling.ToResponseMarshallable.isMarshallable
-import spray.routing._
-import spray.routing.Directive.pimpApply
-import spray.routing.directives.OnCompleteFutureMagnet.apply
+import spray.routing.HttpService
 import utils.Configuration
 import utils.PersistenceModule
 
@@ -28,7 +20,7 @@ class OrderRoutesActor(modules: Configuration with PersistenceModule) extends Ac
 
   implicit val timeout = Timeout(5.seconds)
 
-  def receive = runRoute(OrderService.endpoints)
+  def receive = runRoute(OrderService.endpoints ~ UserService.endpoints)
 }
 
 
