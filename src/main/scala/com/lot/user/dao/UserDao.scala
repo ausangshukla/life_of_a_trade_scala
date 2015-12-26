@@ -23,6 +23,17 @@ object UserDao extends TableQuery(new UserTable(_)) {
   def findByEmail(email: String) = {
     db.run(this.filter(_.email === email).result.headOption)
   }
+  
+  def update(user: User) = {
+    db.run(this.filter(_.id === user.id).update(user))
+  }
+  def delete(user: User) = {
+    db.run(this.filter(_.id === user.id).delete)
+  }
+  
+  def delete(delete_id: Long) = {
+    db.run(this.filter(_.id === delete_id).delete)
+  }
 
   def createTables(): Future[Unit] = {
     db.run(DBIO.seq(this.schema.create))

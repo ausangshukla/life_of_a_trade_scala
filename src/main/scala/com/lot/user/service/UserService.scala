@@ -38,21 +38,19 @@ object UserService extends BaseService with CORSSupport {
     }
   }
   val update = putJson {
-    path("users") {
+    path("users" / IntNumber) { id =>
       entity(as[User]) { user =>
         {
-          complete(dao.save(user))
+          complete(dao.update(user))
         }
       }
     }
   }
   val destroy = deleteJson {
-    path("users") {
-      entity(as[User]) { user =>
-        {
-          complete(dao.save(user))
-        }
-      }
+    path("users" / IntNumber) { id =>
+
+      complete(dao.delete(id))
+
     }
   }
 
