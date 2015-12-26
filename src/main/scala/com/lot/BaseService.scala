@@ -16,12 +16,13 @@ import Directives._
 import spray.routing.authentication.{ Authentication, ContextAuthenticator }
 import scala.concurrent.Await
 import java.sql.Timestamp
+import utils.CORSSupport
 
 object Json4sProtocol extends Json4sSupport {
   implicit def json4sFormats: Formats = DefaultFormats
 }
 
-trait BaseService extends SimpleRoutingApp {
+trait BaseService extends SimpleRoutingApp with CORSSupport {
 
   def getJson(route: Route) = get {
     respondWithMediaType(MediaTypes.`application/json`) {

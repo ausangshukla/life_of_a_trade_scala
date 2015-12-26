@@ -5,13 +5,13 @@ import akka.actor.Props
 import akka.actor.actorRef2Scala
 import akka.io.IO
 import akka.util.Timeout
-import rest.RoutesActor
 import spray.can.Http
 import utils.ActorModuleImpl
 import utils.ConfigurationModuleImpl
 import utils.PersistenceModuleImpl
-import com.lot.ordermanager.service.OrderRoutesActor
 import utils.InitData
+import com.lot.ordermanager.service.OrderRoutesActor
+import com.lot.RoutesActor
 
 
 object Boot extends App   {
@@ -20,7 +20,7 @@ object Boot extends App   {
   val modules = new ConfigurationModuleImpl  with ActorModuleImpl with PersistenceModuleImpl
 
   // create and start our service actor
-  val service = modules.system.actorOf(Props(classOf[OrderRoutesActor], modules), "routesActor")
+  val service = modules.system.actorOf(Props(classOf[RoutesActor], modules), "routesActor")
 
   implicit val system = modules.system
   implicit val timeout = Timeout(5.seconds)
