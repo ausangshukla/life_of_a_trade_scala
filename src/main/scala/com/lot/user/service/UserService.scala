@@ -1,30 +1,19 @@
 package com.lot.user.service
 
-import scala.collection.immutable.Vector
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import scala.reflect.runtime.universe._
 import com.lot.BaseService
 import com.lot.user.dao.UserDao
 import com.lot.user.model.User
-import com.typesafe.scalalogging.LazyLogging
-import akka.pattern.ask
-import spray.http.MediaTypes._
-import spray.http.StatusCodes._
-import spray.httpx.Json4sSupport
-import spray.routing._
-import utils.Configuration
-import utils.PersistenceModule
-import scala.util.Success
-import scala.util.Failure
+import com.lot.user.model.UserJsonProtocol
+import scala.concurrent.ExecutionContext.Implicits.global
+import utils.CORSSupport
 
-object UserService extends BaseService {
+object UserService extends BaseService with CORSSupport {
 
   import com.lot.user.model.UserJsonProtocol._
   import com.lot.Json4sProtocol._
-  
-  val dao =  UserDao
-  
+
+  val dao = UserDao
+
   val list = getJson {
     path("users") {
       complete(dao.list)
@@ -48,7 +37,7 @@ object UserService extends BaseService {
       }
     }
   }
-  val update = postJson {
+  val update = putJson {
     path("users") {
       entity(as[User]) { user =>
         {
@@ -57,7 +46,7 @@ object UserService extends BaseService {
       }
     }
   }
-  val destroy = postJson {
+  val destroy = deleteJson {
     path("users") {
       entity(as[User]) { user =>
         {
@@ -67,5 +56,7 @@ object UserService extends BaseService {
     }
   }
 
-  val endpoints = list ~ details ~ create
+  val endpoints = respondWithCORS("http://localhost:3000") {
+    list ~ details ~ create ~ update ~ destroy
+  }
 }

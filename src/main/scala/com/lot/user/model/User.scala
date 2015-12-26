@@ -9,8 +9,8 @@ import DefaultJsonProtocol._
 /**
  * Entity class storing rows of table Users
  *  @param id Database column id SqlType(INT), AutoInc, PrimaryKey
- *  @param firstName Database column first_name SqlType(VARCHAR), Length(255,true), Default(None)
- *  @param lastName Database column last_name SqlType(VARCHAR), Length(255,true), Default(None)
+ *  @param first_name Database column first_name SqlType(VARCHAR), Length(255,true), Default(None)
+ *  @param last_name Database column last_name SqlType(VARCHAR), Length(255,true), Default(None)
  *  @param email Database column email SqlType(VARCHAR), Length(255,true), Default(None)
  *  @param createdAt Database column created_at SqlType(DATETIME), Default(None)
  *  @param updatedAt Database column updated_at SqlType(DATETIME), Default(None)
@@ -31,37 +31,37 @@ import DefaultJsonProtocol._
  *  @param teamId Database column team_id SqlType(INT), Default(None)
  *  @param contestId Database column contest_id SqlType(INT), Default(None)
  */
-case class User(id: Long, firstName: String, lastName: String, email: String,
-                createdAt: java.sql.Timestamp, updatedAt: java.sql.Timestamp,
-                encryptedPassword: String = "",
-                role: String, teamId: Option[Int], contestId: Option[Int], tokens: Option[String])
+case class User(id: Long, first_name: String, last_name: String, email: String,
+                created_at: java.sql.Timestamp, updated_at: java.sql.Timestamp,
+                encrypted_password: String = "",
+                role: String, team_id: Option[Int], contest_id: Option[Int], tokens: Option[String])
 
 /** Table description of table users. Objects of this class serve as prototypes for rows in queries. */
 class UserTable(_tableTag: Tag) extends Table[User](_tableTag, "users") {
-  def * = (id, firstName, lastName, email, createdAt, updatedAt, encryptedPassword, role, teamId, contestId, tokens) <> (User.tupled, User.unapply)
+  def * = (id, first_name, last_name, email, created_at, updated_at, encrypted_password, role, team_id, contest_id, tokens) <> (User.tupled, User.unapply)
   /** Maps whole row to an option. Useful for outer joins. */
-  def ? = (Rep.Some(id), firstName, lastName, email, createdAt, updatedAt, Rep.Some(encryptedPassword), role, Rep.Some(teamId), Rep.Some(contestId), Rep.Some(tokens)).shaped.<>({ r => import r._; _1.map(_ => User.tupled((_1.get, _2, _3, _4, _5, _6, _7.get, _8, _9.get, _10.get, _11.get))) }, (_: Any) => throw new Exception("Inserting into ? projection not supported."))
+  def ? = (Rep.Some(id), first_name, last_name, email, created_at, updated_at, Rep.Some(encrypted_password), role, Rep.Some(team_id), Rep.Some(contest_id), Rep.Some(tokens)).shaped.<>({ r => import r._; _1.map(_ => User.tupled((_1.get, _2, _3, _4, _5, _6, _7.get, _8, _9.get, _10.get, _11.get))) }, (_: Any) => throw new Exception("Inserting into ? projection not supported."))
 
   /** Database column id SqlType(INT), AutoInc, PrimaryKey */
   val id: Rep[Long] = column[Long]("id", O.AutoInc, O.PrimaryKey)
   /** Database column first_name SqlType(VARCHAR), Length(255,true), Default(None) */
-  val firstName: Rep[String] = column[String]("first_name", O.Length(255, varying = true))
+  val first_name: Rep[String] = column[String]("first_name", O.Length(255, varying = true))
   /** Database column last_name SqlType(VARCHAR), Length(255,true), Default(None) */
-  val lastName: Rep[String] = column[String]("last_name", O.Length(255, varying = true))
+  val last_name: Rep[String] = column[String]("last_name", O.Length(255, varying = true))
   /** Database column email SqlType(VARCHAR), Length(255,true), Default(None) */
   val email: Rep[String] = column[String]("email", O.Length(255, varying = true))
   /** Database column created_at SqlType(DATETIME), Default(None) */
-  val createdAt: Rep[java.sql.Timestamp] = column[java.sql.Timestamp]("created_at")
+  val created_at: Rep[java.sql.Timestamp] = column[java.sql.Timestamp]("created_at")
   /** Database column updated_at SqlType(DATETIME), Default(None) */
-  val updatedAt: Rep[java.sql.Timestamp] = column[java.sql.Timestamp]("updated_at")
+  val updated_at: Rep[java.sql.Timestamp] = column[java.sql.Timestamp]("updated_at")
   /** Database column encrypted_password SqlType(VARCHAR), Length(255,true), Default() */
-  val encryptedPassword: Rep[String] = column[String]("encrypted_password", O.Length(255, varying = true), O.Default(""))
+  val encrypted_password: Rep[String] = column[String]("encrypted_password", O.Length(255, varying = true), O.Default(""))
   /** Database column role SqlType(VARCHAR), Length(255,true), Default(None) */
   val role: Rep[String] = column[String]("role", O.Length(255, varying = true))
   /** Database column team_id SqlType(INT), Default(None) */
-  val teamId: Rep[Option[Int]] = column[Option[Int]]("team_id")
+  val team_id: Rep[Option[Int]] = column[Option[Int]]("team_id")
   /** Database column contest_id SqlType(INT), Default(None) */
-  val contestId: Rep[Option[Int]] = column[Option[Int]]("contest_id")
+  val contest_id: Rep[Option[Int]] = column[Option[Int]]("contest_id")
 
   val tokens: Rep[Option[String]] = column[Option[String]]("tokens", O.DBType("TEXT"))
   val index1 = index("index_users_email", email, unique = true)
