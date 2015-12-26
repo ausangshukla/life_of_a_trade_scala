@@ -56,7 +56,7 @@ object UserService extends BaseService with CORSSupport {
     }
   }
 
-  val endpoints = respondWithCORS("http://localhost:3000") {
+  val endpoints =
     list ~ details ~ create ~ update ~ destroy
-  }
+
 }
