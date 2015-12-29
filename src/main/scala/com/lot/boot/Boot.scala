@@ -10,7 +10,7 @@ import utils.ActorModuleImpl
 import utils.ConfigurationModuleImpl
 import utils.PersistenceModuleImpl
 import utils.InitData
-import com.lot.ordermanager.service.OrderRoutesActor
+import com.lot.order.service.OrderRoutesActor
 import com.lot.RoutesActor
 
 

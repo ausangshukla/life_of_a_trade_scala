@@ -1,9 +1,9 @@
 package utils
 
-import com.lot.ordermanager.dao.OrderDao
-import com.lot.ordermanager.model.OrderType
+import com.lot.order.dao.OrderDao
+import com.lot.order.model.OrderType
 import org.joda.time.DateTime
-import com.lot.ordermanager.model.Order
+import com.lot.order.model.Order
 
 object InitData {
 
