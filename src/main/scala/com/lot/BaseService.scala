@@ -17,12 +17,20 @@ import spray.routing.authentication.{ Authentication, ContextAuthenticator }
 import scala.concurrent.Await
 import java.sql.Timestamp
 import utils.CORSSupport
+import com.lot.TokenAuthenticator.TokenAuthenticator
 
 object Json4sProtocol extends Json4sSupport {
   implicit def json4sFormats: Formats = DefaultFormats
 }
 
 trait BaseService extends SimpleRoutingApp with CORSSupport {
+
+  val authenticator = TokenAuthenticator[User]() { (token, uid) =>
+      println(s"authenticator $token $uid")
+      UserDao.findByEmail(uid)
+    }
+
+  def auth: Directive1[User] = authenticate(authenticator)
 
   def getJson(route: Route) = get {
     respondWithMediaType(MediaTypes.`application/json`) {

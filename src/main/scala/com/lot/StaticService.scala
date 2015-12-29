@@ -3,6 +3,7 @@ package com.lot
 import spray.routing.HttpService
 import com.typesafe.config.ConfigFactory
 import spray.routing.Directive.pimpApply
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait StaticService extends HttpService {
 
@@ -11,10 +12,12 @@ trait StaticService extends HttpService {
 
   val staticRoute = {
     println("webRoot =" + webroot)
-    path("/index.html") {
-      getFromResource(webroot + "/src/client/index.html")
-    } ~ path("/app") {
-      getFromResource(webroot + "/src/client/app")
+    path("") {
+      getFromFile(webroot + "/src/client/index.html")
+    } ~ pathPrefix("app") {
+      getFromDirectory(webroot + "/src/client/app")
+    } ~ pathPrefix("images") {
+      getFromDirectory(webroot + "/src/client/images")
     } ~ {
       getFromDirectory(webroot)
     }

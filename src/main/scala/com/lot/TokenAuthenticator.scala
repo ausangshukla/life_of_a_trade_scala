@@ -5,6 +5,10 @@ import spray.routing.{ AuthenticationFailedRejection, RequestContext }
 import spray.routing.authentication.{ Authentication, ContextAuthenticator }
 import com.lot.user.model.User
 import com.lot.user.dao.UserDao
+import spray.httpx.SprayJsonSupport._
+import spray.json.DefaultJsonProtocol._
+import spray.json.JsonParser
+import scala.collection.immutable.Map
 
 /**
  * Token based authentication for Spray Routing.
@@ -43,15 +47,19 @@ object TokenAuthenticator {
     
     // Specific to Devise Token Auth - https://github.com/lynndylanhurley/devise_token_auth
     def fromHeader(): TokenExtractor = { context: RequestContext =>
-      val access_token = context.request.headers.find(h => h.name == "access-token").map(_.value)
-      val uid = context.request.headers.find(h => h.name == "uid").map(_.value)
+       
+      val cookie = JsonParser(findSessionIdCookieValue(context).get).convertTo[Map[String, String]]
+
+      val access_token = cookie.get("access-token")
+      val uid = cookie.get("uid")
+     
+      println(s"fromHeader $access_token, $uid, $cookie")
       (access_token, uid)
     }
 
-    // Not used
-    def fromQueryString(): TokenExtractor = { context: RequestContext =>
-       (context.request.uri.query.get("access-token"), context.request.uri.query.get("uid"))
-    }
+    
+    private def findSessionIdCookieValue(ctx: RequestContext): Option[String] =
+      ctx.request.cookies.find(_.name == "auth_headers").map(c => java.net.URLDecoder.decode(c.content, "UTF-8"))
   }
 
   class TokenAuthenticator[T](extractor: TokenExtraction.TokenExtractor, authenticator: ((String,String) => Future[Option[T]]))(implicit executionContext: ExecutionContext) extends ContextAuthenticator[T] {
@@ -60,16 +68,17 @@ object TokenAuthenticator {
 
     def apply(context: RequestContext): Future[Authentication[T]] =
       extractor(context) match {
-        case (None, None) =>
-          Future(
-            Left(AuthenticationFailedRejection(CredentialsMissing, List())))
-        case (Some(token), Some(uid)) =>
+      case (Some(token), Some(uid)) =>
           authenticator(token, uid) map {
             case Some(t) =>
               Right(t)
             case None =>
               Left(AuthenticationFailedRejection(CredentialsRejected, List()))
-          }
+          }  
+      case (_, _) =>
+          Future(
+            Left(AuthenticationFailedRejection(CredentialsMissing, List())))
+        
       }
 
   }

@@ -18,12 +18,16 @@ object UserService extends BaseService with CORSSupport {
     path("users") {
       complete(dao.list)
     }
+
   }
 
   val details = getJson {
     path("users" / IntNumber) { id =>
-      {
-        complete(dao.get(id))
+      auth { current_user =>        
+        {
+          println("current_user = " + current_user)
+          complete(dao.get(id))
+        }
       }
     }
   }

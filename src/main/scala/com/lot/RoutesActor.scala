@@ -21,8 +21,8 @@ class RoutesActor(modules: Configuration with PersistenceModule) extends Actor w
 
   implicit val timeout = Timeout(5.seconds)
 
-  def receive = runRoute(
-        respondWithCORS(conf.getString("origin.domain")) { OrderService.endpoints ~ UserService.endpoints })
+  def receive = runRoute(OrderService.endpoints ~ UserService.endpoints ~ staticRoute)
+        //respondWithCORS(conf.getString("origin.domain")) { 
 }
 
 

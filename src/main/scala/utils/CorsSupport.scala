@@ -10,7 +10,7 @@ import spray.http.HttpMethods._
 trait CORSSupport extends Directives {
    private val CORSHeaders = List(
      `Access-Control-Allow-Methods`(GET, POST, PUT, DELETE, OPTIONS),
-     `Access-Control-Allow-Headers`("Origin, X-Requested-With, If-Modified-Since, Content-Type, Accept, Accept-Encoding, Accept-Language, Host, Referer, User-Agent"),
+     `Access-Control-Allow-Headers`("Origin, X-Requested-With, If-Modified-Since, Content-Type, Accept, Accept-Encoding, Accept-Language, Host, Referer, User-Agent, Authorization"),
      `Access-Control-Allow-Credentials`(true)
    )
 
