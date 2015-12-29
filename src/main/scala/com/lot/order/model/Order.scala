@@ -21,7 +21,9 @@ case class Order(id: Option[Long],
                  security_id: Int,
                  quantity: Double,
                  price: Double,
-                 created_at: DateTime)
+                 created_at: Option[DateTime],
+                 updated_at: Option[DateTime]) 
+
 
 object OrderType {
   val BUY = "BUY"
@@ -39,36 +41,12 @@ class OrderTable(tag: Tag) extends Table[Order](tag, "ORDERS") {
   def quantity = column[Double]("quantity")
   def price = column[Double]("price")
   def created_at = column[DateTime]("created_at")
-  def * = (id.?, buy_sell, order_type, user_id, security_id, quantity, price, created_at) <> (Order.tupled, Order.unapply)
+  def updated_at = column[DateTime]("created_at")
+  def * = (id.?, buy_sell, order_type, user_id, security_id, quantity, price, created_at.?, updated_at.?) <> (Order.tupled, Order.unapply)
 }
 
 object OrderJsonProtocol extends DefaultJsonProtocol {
-
-  implicit object DateTimeFormat extends RootJsonFormat[DateTime] {
-
-    val formatter = ISODateTimeFormat.basicDateTimeNoMillis
-
-    def write(obj: DateTime): JsValue = {
-      JsString(formatter.print(obj))
-    }
-
-    def read(json: JsValue): DateTime = json match {
-      case JsString(s) => try {
-        formatter.parseDateTime(s)
-      } catch {
-        case t: Throwable => error(s)
-      }
-      case _ =>
-        error(json.toString())
-    }
-
-    def error(v: Any): DateTime = {
-      val example = formatter.print(0)
-      throw new Exception(f"'$v' is not a valid date value. Dates must be in compact ISO-8601 format, e.g. '$example'")
-    }
-  }
-
-
-  implicit val orderFormat = jsonFormat8(Order)
+  import com.lot.utils.CustomJson._
+  implicit val orderFormat = jsonFormat9(Order)
 }
 

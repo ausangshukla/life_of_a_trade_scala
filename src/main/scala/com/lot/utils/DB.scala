@@ -1,4 +1,4 @@
-package utils
+package com.lot.utils
 
 import slick.backend.DatabaseConfig
 import slick.driver.JdbcProfile

@@ -1,6 +1,7 @@
-package utils
+package com.lot.utils
 
 import akka.actor.ActorSystem
+import com.lot.utils.Configuration
 
 
 trait ActorModule {

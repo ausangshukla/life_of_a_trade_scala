@@ -1,4 +1,4 @@
-package utils
+package com.lot.utils
 
 import spray.routing.Directives
 import spray.http._
@@ -6,6 +6,8 @@ import spray.http.parser._
 import spray.routing.Route
 import spray.http.HttpHeaders._
 import spray.http.HttpMethods._
+import spray.httpx.marshalling.ToResponseMarshallable.isMarshallable
+import spray.routing.Directive.pimpApply
 
 trait CORSSupport extends Directives {
    private val CORSHeaders = List(

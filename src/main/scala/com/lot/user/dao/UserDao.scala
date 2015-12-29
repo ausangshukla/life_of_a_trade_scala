@@ -2,14 +2,13 @@ package com.lot.user.dao
 
 import akka.actor.Actor
 import com.typesafe.scalalogging.LazyLogging
-import persistence.entities.{ Suppliers, Supplier }
 import slick.driver.JdbcProfile
-import utils.{ DbModule }
+import com.lot.utils.DbModule 
 import scala.concurrent.Future
 import com.lot.user.model.UserTable
 import slick.driver.MySQLDriver.api._
 import com.lot.user.model.User
-import utils.DB._
+import com.lot.utils.DB._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object UserDao extends TableQuery(new UserTable(_)) {

@@ -5,7 +5,7 @@ import com.lot.order.dao.OrderDao
 import com.lot.order.model.Order
 import com.lot.order.model.OrderJsonProtocol
 import scala.concurrent.ExecutionContext.Implicits.global
-import utils.CORSSupport
+import com.lot.utils.CORSSupport
 import com.lot.order.model.Order
 
 object OrderService extends BaseService with CORSSupport {

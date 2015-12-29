@@ -63,7 +63,7 @@ class UserTable(_tableTag: Tag) extends Table[User](_tableTag, "users") {
   /** Database column contest_id SqlType(INT), Default(None) */
   val contest_id: Rep[Option[Int]] = column[Option[Int]]("contest_id")
 
-  val tokens: Rep[Option[String]] = column[Option[String]]("tokens", O.DBType("TEXT"))
+  val tokens: Rep[Option[String]] = column[Option[String]]("tokens", O.SqlType("TEXT"))
   val index1 = index("index_users_email", email, unique = true)
   
 }

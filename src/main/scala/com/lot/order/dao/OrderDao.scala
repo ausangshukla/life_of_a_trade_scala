@@ -2,19 +2,23 @@ package com.lot.order.dao
 
 import akka.actor.Actor
 import com.typesafe.scalalogging.LazyLogging
-import persistence.entities.{ Suppliers, Supplier }
 import slick.driver.JdbcProfile
-import utils.{ DbModule }
+import com.lot.utils.DbModule 
 import scala.concurrent.Future
 import com.lot.order.model.OrderTable
 import slick.driver.MySQLDriver.api._
 import com.lot.order.model.Order
-import utils.DB._
+import com.lot.utils.DB._
 import scala.concurrent.ExecutionContext.Implicits.global
+import org.joda.time.DateTime
 
 object OrderDao extends TableQuery(new OrderTable(_)) {
 
-  def save(order: Order): Future[Int] = { db.run(this += order).mapTo[Int] }
+  def save(order: Order): Future[Int] = {
+    val now = new DateTime()
+    val o:Order = order.copy(created_at=Some(now), updated_at=Some(now))
+    db.run(this += o).mapTo[Int] 
+  }
 
   def get(id: Long) = {
     db.run(this.filter(_.id === id).result.headOption)
@@ -22,7 +26,9 @@ object OrderDao extends TableQuery(new OrderTable(_)) {
   
 
   def update(order: Order) = {
-    db.run(this.filter(_.id === order.id).update(order))
+    val now = new DateTime()
+    val o:Order = order.copy(updated_at=Some(now))    
+    db.run(this.filter(_.id === order.id).update(o))
   }
   def delete(order: Order) = {
     db.run(this.filter(_.id === order.id).delete)

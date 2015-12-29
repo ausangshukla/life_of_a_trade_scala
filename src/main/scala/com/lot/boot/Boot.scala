@@ -6,10 +6,10 @@ import akka.actor.actorRef2Scala
 import akka.io.IO
 import akka.util.Timeout
 import spray.can.Http
-import utils.ActorModuleImpl
-import utils.ConfigurationModuleImpl
-import utils.PersistenceModuleImpl
-import utils.InitData
+import com.lot.utils.ActorModuleImpl
+import com.lot.utils.ConfigurationModuleImpl
+import com.lot.utils.PersistenceModuleImpl
+import com.lot.utils.InitData
 import com.lot.order.service.OrderRoutesActor
 import com.lot.RoutesActor
 

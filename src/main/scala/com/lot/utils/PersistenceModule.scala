@@ -1,9 +1,8 @@
-package utils
+package com.lot.utils
 
-import akka.actor.{ ActorPath, ActorSelection, Props, ActorRef }
-import persistence.dal.{ SuppliersDalImpl, SuppliersDal }
 import slick.backend.DatabaseConfig
 import slick.driver.{ JdbcProfile }
+import com.lot.utils.Configuration
 
 trait Profile {
   val profile: JdbcProfile
@@ -14,7 +13,6 @@ trait DbModule extends Profile {
 }
 
 trait PersistenceModule {
-  val suppliersDal: SuppliersDal
 }
 
 trait PersistenceModuleImpl extends PersistenceModule with DbModule {
@@ -27,8 +25,6 @@ trait PersistenceModuleImpl extends PersistenceModule with DbModule {
 
   override implicit val profile: JdbcProfile = dbConfig.driver
   override implicit val db: JdbcProfile#Backend#Database = dbConfig.db
-
-  override val suppliersDal = new SuppliersDalImpl()
 
   val self = this
 

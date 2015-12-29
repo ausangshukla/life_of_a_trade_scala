@@ -5,7 +5,7 @@ import com.lot.user.dao.UserDao
 import com.lot.user.model.User
 import com.lot.user.model.UserJsonProtocol
 import scala.concurrent.ExecutionContext.Implicits.global
-import utils.CORSSupport
+import com.lot.utils.CORSSupport
 import com.lot.user.model.User
 
 object UserService extends BaseService with CORSSupport {

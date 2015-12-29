@@ -8,8 +8,8 @@ import com.typesafe.scalalogging.LazyLogging
 import akka.actor.Actor
 import akka.util.Timeout
 import spray.routing.HttpService
-import utils.Configuration
-import utils.PersistenceModule
+import com.lot.utils.Configuration
+import com.lot.utils.PersistenceModule
 
 class UserRoutesActor(modules: Configuration with PersistenceModule) extends Actor with HttpService with LazyLogging {
 
