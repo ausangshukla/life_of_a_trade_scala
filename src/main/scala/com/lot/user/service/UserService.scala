@@ -6,6 +6,7 @@ import com.lot.user.model.User
 import com.lot.user.model.UserJsonProtocol
 import scala.concurrent.ExecutionContext.Implicits.global
 import utils.CORSSupport
+import com.lot.user.model.User
 
 object UserService extends BaseService with CORSSupport {
 
@@ -13,7 +14,7 @@ object UserService extends BaseService with CORSSupport {
   import com.lot.Json4sProtocol._
 
   val dao = UserDao
-
+  
   val list = getJson {
     path("users") {
       complete(dao.list)
@@ -23,12 +24,7 @@ object UserService extends BaseService with CORSSupport {
 
   val details = getJson {
     path("users" / IntNumber) { id =>
-      auth { current_user =>        
-        {
-          println("current_user = " + current_user)
-          complete(dao.get(id))
-        }
-      }
+          complete(dao.get(id))              
     }
   }
 
@@ -58,7 +54,11 @@ object UserService extends BaseService with CORSSupport {
     }
   }
 
-  val endpoints =
-    list ~ details ~ create ~ update ~ destroy
-
+  val endpoints = 
+    auth { 
+      current_user => {
+          println("current_user = " + current_user)
+          list ~ details ~ create ~ update ~ destroy
+      }
+    }
 }

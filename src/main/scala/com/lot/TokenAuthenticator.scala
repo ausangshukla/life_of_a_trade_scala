@@ -45,19 +45,25 @@ object TokenAuthenticator {
 
     type TokenExtractor = RequestContext => (Option[String], Option[String])
     
-    // Specific to Devise Token Auth - https://github.com/lynndylanhurley/devise_token_auth
+    
     def fromHeader(): TokenExtractor = { context: RequestContext =>
-       
-      val cookie = JsonParser(findSessionIdCookieValue(context).get).convertTo[Map[String, String]]
-
+      // Get and parse out the cookie 
+      val cookieContents = findSessionIdCookieValue(context).getOrElse("{}")
+      val cookie = JsonParser(cookieContents).convertTo[Map[String, String]]
+      
+      // Specific to Devise Token Auth - https://github.com/lynndylanhurley/devise_token_auth
       val access_token = cookie.get("access-token")
       val uid = cookie.get("uid")
-     
+      
+      // Return the tokens
       println(s"fromHeader $access_token, $uid, $cookie")
       (access_token, uid)
     }
 
-    
+    /**
+     * The devise rails app sends a cookie with the auth_headers
+     * This cookie contains a URLEncoded key value pair required for authentication
+     */
     private def findSessionIdCookieValue(ctx: RequestContext): Option[String] =
       ctx.request.cookies.find(_.name == "auth_headers").map(c => java.net.URLDecoder.decode(c.content, "UTF-8"))
   }
