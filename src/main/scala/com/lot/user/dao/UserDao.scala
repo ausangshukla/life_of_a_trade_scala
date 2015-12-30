@@ -13,7 +13,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 object UserDao extends TableQuery(new UserTable(_)) {
 
-  def save(user: User): Future[Int] = { db.run(this += user).mapTo[Int] }
+  def save(user: User): Future[Int] = { 
+    db.run(this += user).mapTo[Int] 
+  }
 
   def get(id: Long) = {
     db.run(this.filter(_.id === id).result.headOption)

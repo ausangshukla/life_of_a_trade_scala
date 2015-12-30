@@ -18,6 +18,10 @@ trait StaticService extends HttpService {
       getFromDirectory(webroot + "/src/client/app")
     } ~ pathPrefix("images") {
       getFromDirectory(webroot + "/src/client/images")
+    }  ~ pathPrefix("styles") {
+      getFromDirectory(webroot + "/src/client/styles")
+    }  ~ pathPrefix("fonts") {
+      getFromDirectory(webroot + "/src/client/styles/fonts")
     } ~ {
       getFromDirectory(webroot)
     }

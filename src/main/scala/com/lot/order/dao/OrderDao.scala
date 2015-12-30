@@ -14,10 +14,11 @@ import org.joda.time.DateTime
 
 object OrderDao extends TableQuery(new OrderTable(_)) {
 
-  def save(order: Order): Future[Int] = {
-    val now = new DateTime()
-    val o:Order = order.copy(created_at=Some(now), updated_at=Some(now))
-    db.run(this += o).mapTo[Int] 
+  val insertQuery = this returning this.map(_.id) into ((order, id) => order.copy(id = Some(id)))
+  
+  def save(order: Order) : Future[Order] = {
+    val action = insertQuery += order
+    db.run(action)
   }
 
   def get(id: Long) = {
@@ -25,11 +26,12 @@ object OrderDao extends TableQuery(new OrderTable(_)) {
   }
   
 
-  def update(order: Order) = {
+  def update(order: Order): Future[Int] = {
     val now = new DateTime()
     val o:Order = order.copy(updated_at=Some(now))    
     db.run(this.filter(_.id === order.id).update(o))
   }
+  
   def delete(order: Order) = {
     db.run(this.filter(_.id === order.id).delete)
   }
@@ -43,8 +45,14 @@ object OrderDao extends TableQuery(new OrderTable(_)) {
   }
 
   def list = {
-    val allOrders = for (o <- this) yield o
-    db.run(allOrders.result)
+    val allOrders = for {
+        o <- this
+      } yield (o)
+    db.run(allOrders.sortBy(_.id.desc).result)
+  }
+  
+  def findByQuantity(quantity: Double) = {
+    db.run(this.filter(_.quantity === quantity).result)
   }
 
 }

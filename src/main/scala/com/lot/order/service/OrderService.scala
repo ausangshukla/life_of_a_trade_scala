@@ -56,8 +56,8 @@ object OrderService extends BaseService with CORSSupport {
 
   val endpoints = 
     auth { 
-      current_order => {
-          println("current_order = " + current_order)
+      current_user => {
+          println("current_user = " + current_user)
           list ~ details ~ create ~ update ~ destroy
       }
     }
