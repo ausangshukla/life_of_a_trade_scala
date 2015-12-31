@@ -15,7 +15,7 @@ import akka.util.Timeout
 import com.lot.exchange.Exchange
 
 
-class OrderService(context: ActorContext) extends BaseService with CORSSupport {
+object OrderService extends BaseService {
 
   import com.lot.order.model.OrderJsonProtocol._
   import com.lot.Json4sProtocol._
@@ -42,7 +42,6 @@ class OrderService(context: ActorContext) extends BaseService with CORSSupport {
           complete({
             val saved = dao.save(order)
             Exchange.exchanges.get(order.exchange).map { exchange =>
-              logger.info(s"Sending order to exchange $exchange")
               saved.map(exchange ! NewOrder(_, new DateTime()))
             }
             saved
@@ -58,7 +57,6 @@ class OrderService(context: ActorContext) extends BaseService with CORSSupport {
           complete({
             dao.update(order)
             Exchange.exchanges.get(order.exchange).map { exchange => 
-              logger.info(s"Sending order to exchange $exchange")
               exchange ! ModifyOrder(order, new DateTime())
             }
             order

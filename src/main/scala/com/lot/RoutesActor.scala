@@ -12,15 +12,21 @@ import utils.PersistenceModule
 import com.typesafe.config.ConfigFactory
 import com.lot.order.service.OrderService
 import com.lot.utils.CORSSupport
+import com.lot.security.service.SecurityService
+import akka.actor.ActorLogging
 
 class RoutesActor(modules: Configuration with PersistenceModule) extends Actor with 
-  HttpService with StaticService with CORSSupport with LazyLogging {
+  HttpService with StaticService with CORSSupport with ActorLogging {
 
   def actorRefFactory = context
 
   implicit val timeout = Timeout(5.seconds)
 
-  def receive = runRoute(new OrderService(context).endpoints ~ UserService.endpoints ~ staticRoute)
+  def receive = runRoute(respondWithCORS(conf.getString("origin.domain")) {
+      OrderService.endpoints ~ 
+      UserService.endpoints ~ 
+      SecurityService.endpoints ~ 
+      staticRoute })
  
 }
 

@@ -11,9 +11,10 @@ import com.lot.utils.PersistenceModule
 import com.lot.StaticService
 import com.lot.utils.CORSSupport
 import com.typesafe.config.ConfigFactory
+import akka.actor.ActorLogging
 
 class SecurityRoutesActor(modules: Configuration with PersistenceModule) extends Actor with 
-  HttpService with StaticService with CORSSupport with LazyLogging {
+  HttpService with StaticService with CORSSupport with ActorLogging {
 
   import com.lot.security.model.SecurityJsonProtocol._
 
