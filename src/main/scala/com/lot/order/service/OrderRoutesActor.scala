@@ -10,7 +10,6 @@ import com.lot.utils.Configuration
 import com.lot.utils.PersistenceModule
 import com.lot.utils.CORSSupport
 import com.typesafe.config.ConfigFactory
-import com.lot.order.service.OrderService
 import com.lot.StaticService
 
 class OrderRoutesActor(modules: Configuration with PersistenceModule) extends Actor with 
@@ -23,7 +22,7 @@ class OrderRoutesActor(modules: Configuration with PersistenceModule) extends Ac
   implicit val timeout = Timeout(5.seconds)
 
   def receive = runRoute(
-        respondWithCORS(conf.getString("origin.domain")) { OrderService.endpoints })
+        respondWithCORS(conf.getString("origin.domain")) { new OrderService(context).endpoints })
 }
 
 

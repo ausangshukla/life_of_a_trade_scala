@@ -9,6 +9,7 @@ import spray.httpx.SprayJsonSupport._
 import spray.json.DefaultJsonProtocol._
 import spray.json.JsonParser
 import scala.collection.immutable.Map
+import com.typesafe.scalalogging.LazyLogging
 
 /**
  * Token based authentication for Spray Routing.
@@ -41,7 +42,7 @@ import scala.collection.immutable.Map
 
 object TokenAuthenticator {
 
-  object TokenExtraction {
+  object TokenExtraction extends LazyLogging {
 
     type TokenExtractor = RequestContext => (Option[String], Option[String])
     
@@ -56,7 +57,7 @@ object TokenAuthenticator {
       val uid = cookie.get("uid")
       
       // Return the tokens
-      println(s"fromHeader $access_token, $uid, $cookie")
+      logger.debug(s"fromHeader $access_token, $uid")
       (access_token, uid)
     }
 

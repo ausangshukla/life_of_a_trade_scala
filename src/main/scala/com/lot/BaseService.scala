@@ -18,15 +18,15 @@ import scala.concurrent.Await
 import java.sql.Timestamp
 import utils.CORSSupport
 import com.lot.TokenAuthenticator.TokenAuthenticator
+import com.typesafe.scalalogging.LazyLogging
 
 object Json4sProtocol extends Json4sSupport {
   implicit def json4sFormats: Formats = DefaultFormats
 }
 
-trait BaseService extends SimpleRoutingApp with CORSSupport {
+trait BaseService extends SimpleRoutingApp with CORSSupport with LazyLogging {
 
   val authenticator = TokenAuthenticator[User]() { (token, uid) =>
-      println(s"authenticator $token $uid")
       UserDao.findByEmail(uid)
     }
 
