@@ -22,6 +22,7 @@ case class Order(id: Option[Long],
                  user_id: Long,
                  security_id: Long,
                  quantity: Double,
+                 var unfilled_qty: Double,
                  price: Double,
                  created_at: Option[DateTime],
                  updated_at: Option[DateTime]) 
@@ -44,16 +45,17 @@ class OrderTable(tag: Tag) extends Table[Order](tag, "orders") {
   def user_id = column[Long]("user_id")
   def security_id = column[Long]("security_id")
   def quantity = column[Double]("quantity")
+  def unfilled_qty = column[Double]("unfilled_qty")
   def price = column[Double]("price")
   def created_at = column[DateTime]("created_at")
   def updated_at = column[DateTime]("updated_at")
-  def * = (id.?, exchange, buy_sell, order_type, user_id, security_id, quantity, price, created_at.?, updated_at.?) <> (Order.tupled, Order.unapply)
+  def * = (id.?, exchange, buy_sell, order_type, user_id, security_id, quantity, unfilled_qty, price, created_at.?, updated_at.?) <> (Order.tupled, Order.unapply)
 }
 
 
 
 object OrderJsonProtocol extends DefaultJsonProtocol {
   import com.lot.utils.CustomJson._
-  implicit val orderFormat = jsonFormat10(Order)
+  implicit val orderFormat = jsonFormat11(Order)
 }
 
