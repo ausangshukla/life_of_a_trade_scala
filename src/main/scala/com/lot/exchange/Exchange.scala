@@ -15,6 +15,10 @@ import com.lot.utils.ActorModuleImpl
 import akka.actor.ActorSystem
 import scala.collection.immutable.Map
 import akka.actor.ActorLogging
+import scala.collection.mutable.ListBuffer
+import com.lot.order.dao.OrderDao
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 class Exchange(name: String) extends Actor with ActorLogging  {
 
@@ -38,7 +42,7 @@ class Exchange(name: String) extends Actor with ActorLogging  {
    * @order: The order for which the matcher is required.
    * @return: The ActorRef of the matcher which will match this order
    */
-  def getMatcher(order: Order) = {
+  private def getMatcher(order: Order) = {
     val security_id = order.security_id
     val matcher = matchers.get(security_id)
     matcher match {
@@ -47,11 +51,30 @@ class Exchange(name: String) extends Actor with ActorLogging  {
       // No matcher found - lets create, cache and use
       case None => {
         log.info(s"Creating matcher OrderMatcher-$security_id")
-        val m = context.actorOf(Props(classOf[OrderMatcher], security_id), s"OrderMatcher-$security_id")
+        val m = buildMatcher(security_id)
         matchers += (security_id -> m)
         m
       }
-    }
+    } 
+  }
+  
+  /**
+   * Builds an OrderMatcher actor by passing it all the unfilled orders in the DB
+   */
+  private def buildMatcher(security_id: Long) = {
+    val buys = new ListBuffer[Order]()
+    val sells = new ListBuffer[Order]()    
+    /*
+     * TODO - re-examine if there is a non blocking way of doing this!
+     * Load the unfilled orders from the DB. Note we need to block here, else the OrderMatcher 
+     * will not be in a state to match the incoming orders
+     */
+    buys ++= Await.result(OrderDao.unfilled_buys(security_id), 5 seconds)
+    sells ++= Await.result(OrderDao.unfilled_sells(security_id), 5 seconds)
+    /*
+     * Create the OrderMatcher actor
+     */
+    context.actorOf(Props(classOf[OrderMatcher], security_id, buys, sells), s"OrderMatcher-$security_id")        
   }
 
 }

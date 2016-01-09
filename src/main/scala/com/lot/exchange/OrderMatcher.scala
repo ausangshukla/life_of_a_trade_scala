@@ -8,6 +8,7 @@ import com.lot.order.model.OrderType
 import akka.actor.ActorLogging
 import scala.collection.mutable.MutableList
 import scala.collection.mutable.ListBuffer
+import com.lot.order.dao.OrderDao
 
 /**
  * The matcher for a particular security
@@ -18,6 +19,10 @@ import scala.collection.mutable.ListBuffer
  */
 class OrderMatcher(security_id: Long, buys: ListBuffer[Order], sells: ListBuffer[Order]) extends Actor with ActorLogging {
 
+  override def preStart = {
+    
+  }
+  
   import com.lot.exchange.Message._
 
   def receive = {
@@ -27,8 +32,12 @@ class OrderMatcher(security_id: Long, buys: ListBuffer[Order], sells: ListBuffer
     case _                      => {}
   }
 
-  def handleNewOrder(order: Order) = {
-    log.info(s"Handling order $order")
+  /**
+   * @order : The new order to be handled
+   * @tailrec
+   */
+  def handleNewOrder(order: Order): Unit = {
+    log.info(s"Handling unfilled_qty  = ${order.unfilled_qty} for order $order")
     
     /*
      * Find a match
@@ -44,6 +53,12 @@ class OrderMatcher(security_id: Long, buys: ListBuffer[Order], sells: ListBuffer
          * Ensure the unfilled_qty is adjusted for both orders
          */
         adjustOrders(order, mo)
+        /*
+         * Recursively call handleNewOrder until all the quantity is filled or the order is enqueued
+         */
+        if(order.unfilled_qty > 0 ) {
+          handleNewOrder(order)
+        }
       }
       case None => {
         /*
@@ -67,13 +82,29 @@ class OrderMatcher(security_id: Long, buys: ListBuffer[Order], sells: ListBuffer
         case OrderType.SELL => sells -= matchedOrder        
       }
       
+      /*
+       * Fill the entire matchedOrder. Mark the order as partially filled
+       */
+      log.info(s"order id ${order.id} filled with ${matchedOrder.unfilled_qty} from matchedOrder ${matchedOrder.id}")
       order.unfilled_qty = order.unfilled_qty - matchedOrder.unfilled_qty
       matchedOrder.unfilled_qty = 0
       
     } else {
+      /*
+       * Fill the entire order. Mark the matched order as partially filled
+       */
+      log.info(s"order id ${order.id} filled with ${order.unfilled_qty} from matchedOrder ${matchedOrder.id}")
       matchedOrder.unfilled_qty = matchedOrder.unfilled_qty - order.unfilled_qty
       order.unfilled_qty = 0
+      
     }
+    
+    /*
+     * Save the state. TODO - ensure transactions
+     */
+    OrderDao.update(order)
+    OrderDao.update(matchedOrder)
+    
   }
   
   /**
@@ -83,12 +114,14 @@ class OrderMatcher(security_id: Long, buys: ListBuffer[Order], sells: ListBuffer
     /*
      * Send to trade booking actor
      */
+    log.info(s"Generating trade for order $order with matchedOrder $matchedOrder")
   }
 
   /**
    * Enqueues the order into the buys or sells and ensures they are sorted 
    */
   private def enqueOrder(order: Order) = {
+    log.info(s"Enqueuing order $order")
     order match {
       case Order(id, _, OrderType.BUY, _, user_id, _, _, _, _, _, _) => {
         buys += order
@@ -104,28 +137,30 @@ class OrderMatcher(security_id: Long, buys: ListBuffer[Order], sells: ListBuffer
    * Finds an order that matches the given order
    */
   def findMatch(order: Order) : Option[Order] = {
+    
     order match {
       case Order(id, _, OrderType.BUY, OrderType.MARKET, user_id, _, _, _, _, _, _) =>
         sells.headOption match {
-          case Some(head) => Some(head)
-          case None       => None
+          case Some(head)  => Some(head)
+          case _           => None
         }
       case Order(id, _, OrderType.SELL, OrderType.MARKET, user_id, _, _, _, _, _, _) =>
         buys.headOption match {
-          case Some(head) => Some(head)
-          case None       => None
+          case Some(head)  => Some(head)
+          case _           => None
         }
       case Order(id, _, OrderType.BUY, OrderType.LIMIT, user_id, _, _, _, _, _, _) =>
         sells.headOption match {
-          case Some(head) if head.price < order.price => Some(head)
-          case None                                   => None
+          case Some(head) if head.price < order.price  => Some(head)
+          case _                                       => None
         }
       case Order(id, _, OrderType.SELL, OrderType.LIMIT, user_id, _, _, _, _, _, _) =>
         buys.headOption match {
-          case Some(head) if head.price > order.price => Some(head)
-          case None                                   => None
+          case Some(head) if head.price > order.price  => Some(head)
+          case _                                       => None
         }
     }
+    
   }
 
 }

@@ -40,16 +40,31 @@ object OrderService extends BaseService {
       entity(as[Order]) { order =>
         {
           complete({
-            val saved = dao.save(order)
+            /*
+             * Ensure the unfilled_qty is set to the quantity
+             */
+            order.unfilled_qty = order.quantity
+            /*
+             * Save to the DB
+             */
+            val savedOrder = dao.save(order)
+            /*
+             * Send it to the exchange for execution
+             */
             Exchange.exchanges.get(order.exchange).map { exchange =>
-              saved.map(exchange ! NewOrder(_, new DateTime()))
+              savedOrder.map(exchange ! NewOrder(_, new DateTime()))
             }
-            saved
+            /*
+             * Return the saved but yet unmatched order
+             */
+            savedOrder
            })
         }
       }
     }
   }
+  
+  
   val update = putJson {
     path("orders" / IntNumber) { id =>
       entity(as[Order]) { order =>

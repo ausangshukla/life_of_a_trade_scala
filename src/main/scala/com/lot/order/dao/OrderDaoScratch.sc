@@ -19,25 +19,28 @@ object OrderDaoScratch {
                                                   //| ion.
                                                   //| SLF4J: Actual binding is of type [ch.qos.logback.classic.util.ContextSelecto
                                                   //| rStaticBinder]
-                                                  //| 12/31 12:41:27 DEBUG[main] s.b.D.action - #1: result [select x2.`id`, x2.`ex
+                                                  //| 01/07 10:19:24 DEBUG[main] s.b.D.action - #1: result [select x2.`id`, x2.`ex
                                                   //| change`, x2.`buy_sell`, x2.`order_type`, x2.`user_id`, x2.`security_id`, x2.
-                                                  //| `quantity`, x2.`price`, x2.`created_at`, x2.`updated_at` from `orders` x2 or
-                                                  //| der by x2.`id` desc]
-                                                  //| orders  : scala.concurrent.Future[Seq[com.lot.order.model.Order]] = scala.co
-                                                  //| ncurre
+                                                  //| `quantity`, x2.`unfilled_qty`, x2.`price`, x2.`created_at`, x2.`updated_at` 
+                                                  //| from `orders` x2 order by x2.`id` desc]
+                                                  //| orders  : scala.concurrent.Future[Seq[com.lot.order.model.Order]] = 
                                                   //| Output exceeds cutoff limit.
-  val s = Await.result(orders, 5 seconds)         //> s  : Seq[com.lot.order.model.Order] = Vector(Order(Some(96),NYSE,SELL,MARKET
-                                                  //| ,26,10,100.0,101.11,Some(2015-12-31T12:24:33.000+05:30),Some(2015-12-31T12:2
-                                                  //| 4:33.000+05:30)), Order(Some(95),NYSE,BUY,MARKET,26,10,100.0,100.0,Some(2015
-                                                  //| -12-31T10:02:38.000+05:30),Some(2015-12-31T10:02:38.000+05:30)), Order(Some(
-                                                  //| 94),NYSE,BUY,LIMIT,1,10,150.0,98.3,Some(2015-12-31T10:02:26.000+05:30),Some(
-                                                  //| 2015-12-31T10:02:26.000+05:30)), Order(Some(93),NASDAQ,SELL,MARKET,1,10,120.
-                                                  //| 0,103.3,Some(2015-12-31T10:02:26.000+05:30),Some(2015-12-31T10:02:26.000+05:
-                                                  //| 30)), Order(Some(92),NASDAQ,BUY,MARKET,1,10,100.0,102.3,Some(2015-12-31T10:0
-                                                  //| 2:26.000+05:30),Some(2015-12-31T10:02:26.000+05:30)), Order(Some(91),NYSE,BU
-                                                  //| Y,LIMIT,1,10,150.0,98.3,Some(2015-12-31T09:59:37.000+05:30),Some(2015-12-31T
-                                                  //| 09:59:37.000+05:30)), Order(Some(90),NASDAQ,SELL,MARKET,1,10,120.0,103.3,Som
-                                                  //| e(2015-12-31T09:59:37.000+05:30),Some(2015-12-31T09:59:37.000+05:30)), Order
-                                                  //| (Some(89),NASDAQ,BUY,MAR
+  val s = Await.result(orders, 5 seconds)         //> com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException: Unknown column 'x
+                                                  //| 2.unfilled_qty' in 'field list'
+                                                  //| 	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+                                                  //| 
+                                                  //| 	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstruct
+                                                  //| orAccessorImpl.java:57)
+                                                  //| 	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingC
+                                                  //| onstructorAccessorImpl.java:45)
+                                                  //| 	at java.lang.reflect.Constructor.newInstance(Constructor.java:526)
+                                                  //| 	at com.mysql.jdbc.Util.handleNewInstance(Util.java:404)
+                                                  //| 	at com.mysql.jdbc.Util.getInstance(Util.java:387)
+                                                  //| 	at com.mysql.jdbc.SQLError.createSQLException(SQLError.java:939)
+                                                  //| 	at com.mysql.jdbc.MysqlIO.checkErrorPacket(MysqlIO.java:3878)
+                                                  //| 	at com.mysql.jdbc.MysqlIO.checkErrorPacket(MysqlIO.java:3814)
+                                                  //| 	at com.mysql.jdbc.MysqlIO.sendCommand(MysqlIO.java:2478)
+                                                  //| 	at com.mysql.jdbc.MysqlIO.sqlQueryDirect(MysqlIO.java:2625)
+                                                  //| 	at com.mysql.jdbc.ConnectionImpl.execSQL(ConnectionImpl.
                                                   //| Output exceeds cutoff limit.
 }
