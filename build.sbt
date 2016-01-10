@@ -36,7 +36,11 @@ libraryDependencies ++= {
     "com.gettyimages" %% "spray-swagger" % "0.5.1",
     "org.scala-lang" % "scala-reflect" % scalaVersion.value
   )
+  
+
 }
 
+libraryDependencies += "org.scalactic" %% "scalactic" % "2.2.6"
+libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.6" % "test"
 
 fork in run := true

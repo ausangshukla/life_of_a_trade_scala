@@ -117,3 +117,28 @@ class UnfilledOrderManager(security_id: Long, buys: ListBuffer[Order], sells: Li
   }
 
 }
+
+import scala.concurrent.Await
+import scala.concurrent.duration._
+
+object UnfilledOrderManager {
+  
+  /**
+   * Creates an instance of the UnfilledOrderManager with buys and sells loaded from the DB
+   */
+  def apply(security_id: Long) = {
+    val buys = new ListBuffer[Order]()
+    val sells = new ListBuffer[Order]()
+    
+    /*
+     * TODO - re-examine if there is a non blocking way of doing this!
+     * Load the unfilled orders from the DB. Note we need to block here, else the OrderMatcher 
+     * will not be in a state to match the incoming orders
+     */
+    buys ++= Await.result(OrderDao.unfilled_buys(security_id), 5 seconds)
+    sells ++= Await.result(OrderDao.unfilled_sells(security_id), 5 seconds)
+    
+    new UnfilledOrderManager(security_id, buys, sells)
+  }
+  
+}

@@ -17,8 +17,6 @@ import scala.collection.immutable.Map
 import akka.actor.ActorLogging
 import scala.collection.mutable.ListBuffer
 import com.lot.order.dao.OrderDao
-import scala.concurrent.Await
-import scala.concurrent.duration._
 
 class Exchange(name: String) extends Actor with ActorLogging  {
 
@@ -62,22 +60,12 @@ class Exchange(name: String) extends Actor with ActorLogging  {
    * Builds an OrderMatcher actor by passing it all the unfilled orders in the DB
    */
   private def buildMatcher(security_id: Long) = {
-    val buys = new ListBuffer[Order]()
-    val sells = new ListBuffer[Order]()
     
-    /*
-     * TODO - re-examine if there is a non blocking way of doing this!
-     * Load the unfilled orders from the DB. Note we need to block here, else the OrderMatcher 
-     * will not be in a state to match the incoming orders
-     */
-    buys ++= Await.result(OrderDao.unfilled_buys(security_id), 5 seconds)
-    sells ++= Await.result(OrderDao.unfilled_sells(security_id), 5 seconds)
-    
-    val unfliiedOM = new UnfilledOrderManager(security_id, buys, sells)
+    val unfilledOM = UnfilledOrderManager(security_id)
     /*
      * Create the OrderMatcher actor
      */
-    context.actorOf(Props(classOf[OrderMatcher], security_id, unfliiedOM), s"OrderMatcher-$security_id")        
+    context.actorOf(Props(classOf[OrderMatcher], security_id, unfilledOM), s"OrderMatcher-$security_id")        
   }
 
 }
