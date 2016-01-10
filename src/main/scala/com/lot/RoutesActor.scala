@@ -8,14 +8,13 @@ import akka.actor.Actor
 import akka.util.Timeout
 import spray.routing.HttpService
 import utils.Configuration
-import utils.PersistenceModule
 import com.typesafe.config.ConfigFactory
 import com.lot.order.service.OrderService
 import com.lot.utils.CORSSupport
 import com.lot.security.service.SecurityService
 import akka.actor.ActorLogging
 
-class RoutesActor(modules: Configuration with PersistenceModule) extends Actor with 
+class RoutesActor(modules: Configuration) extends Actor with 
   HttpService with StaticService with CORSSupport with ActorLogging {
 
   def actorRefFactory = context

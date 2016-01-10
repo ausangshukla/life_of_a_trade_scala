@@ -9,10 +9,9 @@ import akka.actor.Actor
 import akka.util.Timeout
 import spray.routing.HttpService
 import com.lot.utils.Configuration
-import com.lot.utils.PersistenceModule
 import akka.actor.ActorLogging
 
-class UserRoutesActor(modules: Configuration with PersistenceModule) extends Actor 
+class UserRoutesActor(modules: Configuration) extends Actor 
 with HttpService with ActorLogging {
 
   import com.lot.user.model.UserJsonProtocol._

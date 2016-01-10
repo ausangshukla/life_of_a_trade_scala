@@ -7,13 +7,12 @@ import akka.actor.Actor
 import akka.util.Timeout
 import spray.routing.HttpService
 import com.lot.utils.Configuration
-import com.lot.utils.PersistenceModule
 import com.lot.StaticService
 import com.lot.utils.CORSSupport
 import com.typesafe.config.ConfigFactory
 import akka.actor.ActorLogging
 
-class TradeRoutesActor(modules: Configuration with PersistenceModule) extends Actor with 
+class TradeRoutesActor(modules: Configuration) extends Actor with 
   HttpService with StaticService with CORSSupport with ActorLogging {
 
   import com.lot.trade.model.TradeJsonProtocol._

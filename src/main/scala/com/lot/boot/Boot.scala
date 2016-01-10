@@ -8,7 +8,6 @@ import akka.util.Timeout
 import spray.can.Http
 import com.lot.utils.ActorModuleImpl
 import com.lot.utils.ConfigurationModuleImpl
-import com.lot.utils.PersistenceModuleImpl
 import com.lot.utils.InitData
 import com.lot.order.service.OrderRoutesActor
 import com.lot.RoutesActor
@@ -17,7 +16,7 @@ import com.lot.RoutesActor
 object Boot extends App   {
 
   // configuring modules for application, cake pattern for DI
-  val modules = new ConfigurationModuleImpl  with ActorModuleImpl with PersistenceModuleImpl
+  val modules = new ConfigurationModuleImpl  with ActorModuleImpl
 
   // create and start our service actor
   val service = modules.system.actorOf(Props(classOf[RoutesActor], modules), "routesActor")
