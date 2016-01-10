@@ -9,7 +9,9 @@ import com.typesafe.scalalogging.LazyLogging
 /**
  * Manages all the unfilled orders for a given security
  */
-class UnfilledOrderManager(security_id: Long, buys: ListBuffer[Order], sells: ListBuffer[Order]) extends LazyLogging {
+class UnfilledOrderManager(val security_id: Long,
+                           val buys: ListBuffer[Order],
+                           val sells: ListBuffer[Order]) extends LazyLogging {
 
   /**
    * Finds an order that matches the given order
@@ -17,7 +19,7 @@ class UnfilledOrderManager(security_id: Long, buys: ListBuffer[Order], sells: Li
   def findMatch(order: Order): Option[Order] = {
 
     checkOrder(order)
-    
+
     order match {
       case Order(id, _, OrderType.BUY, OrderType.MARKET, user_id, _, _, _, _, _, _) =>
         sells.headOption match {
@@ -47,10 +49,10 @@ class UnfilledOrderManager(security_id: Long, buys: ListBuffer[Order], sells: Li
    * Modifies the unfilled quantity for the matched trades
    */
   def adjustOrders(order: Order, matchedOrder: Order) = {
-    
+
     checkOrder(order)
     checkOrder(matchedOrder)
-    
+
     if (order.unfilled_qty >= matchedOrder.unfilled_qty) {
       /*
        * Remove the matchedOrder from the appropriate queue, so it does not match up with new incoming orders
@@ -90,9 +92,9 @@ class UnfilledOrderManager(security_id: Long, buys: ListBuffer[Order], sells: Li
    */
   def enqueOrder(order: Order) = {
     logger.info(s"Enqueuing order $order")
-    
+
     checkOrder(order)
-    
+
     order match {
       case Order(id, _, OrderType.BUY, _, user_id, _, _, _, _, _, _) => {
         buys += order
@@ -108,7 +110,7 @@ class UnfilledOrderManager(security_id: Long, buys: ListBuffer[Order], sells: Li
    * Defensive programming - change later.
    * Check if this order can be handled by this UOM
    */
-  def checkOrder(order:Order) = {
+  def checkOrder(order: Order) = {
 
     if (order.security_id != security_id) {
       throw new IllegalArgumentException(s"Cannot handle $order with UnfilledOrderManager of security_id = $security_id")
@@ -122,14 +124,14 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 
 object UnfilledOrderManager {
-  
+
   /**
    * Creates an instance of the UnfilledOrderManager with buys and sells loaded from the DB
    */
   def apply(security_id: Long) = {
     val buys = new ListBuffer[Order]()
     val sells = new ListBuffer[Order]()
-    
+
     /*
      * TODO - re-examine if there is a non blocking way of doing this!
      * Load the unfilled orders from the DB. Note we need to block here, else the OrderMatcher 
@@ -137,8 +139,8 @@ object UnfilledOrderManager {
      */
     buys ++= Await.result(OrderDao.unfilled_buys(security_id), 5 seconds)
     sells ++= Await.result(OrderDao.unfilled_sells(security_id), 5 seconds)
-    
+
     new UnfilledOrderManager(security_id, buys, sells)
   }
-  
+
 }

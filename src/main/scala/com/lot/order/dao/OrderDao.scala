@@ -57,14 +57,14 @@ object OrderDao extends TableQuery(new OrderTable(_)) {
    */
   def unfilled(security_id: Long, buy_sell: String) = {
     val allOrders = for {
-        o <- this if (o.security_id == security_id && o.buy_sell == buy_sell)       
+        o <- this if (o.quantity > o.unfilled_qty && o.security_id === security_id && o.buy_sell === buy_sell)       
       } yield (o)
     db.run(allOrders.sortBy(_.price.desc).result)
   }
   
   def unfilled_buys(security_id: Long) = {
     val allOrders = for {
-        o <- this if (o.security_id == security_id && o.buy_sell == OrderType.BUY)       
+        o <- this if (o.quantity > o.unfilled_qty && o.security_id === security_id && o.buy_sell === OrderType.BUY)       
       } yield (o)
     // TODO - cannot sort by created_at, fix that  
     db.run(allOrders.sortBy(x => (x.price.desc, x.id.desc)).result)
@@ -72,13 +72,15 @@ object OrderDao extends TableQuery(new OrderTable(_)) {
   
   def unfilled_sells(security_id: Long) = {
     val allOrders = for {
-        o <- this if (o.security_id == security_id && o.buy_sell == OrderType.SELL)       
+        o <- this if (o.quantity > o.unfilled_qty && o.security_id === security_id && o.buy_sell === OrderType.SELL)       
       } yield (o)
     // TODO - cannot sort by created_at, fix that  
     db.run(allOrders.sortBy(x => (x.price.asc, x.id.desc)).result)
   }
   
-  
+  def truncate = {
+    db.run(sqlu"TRUNCATE TABLE orders;")
+  }
   
   def findByQuantity(quantity: Double) = {
     db.run(this.filter(_.quantity === quantity).result)

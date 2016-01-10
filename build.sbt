@@ -16,9 +16,6 @@ libraryDependencies ++= {
     "com.typesafe.akka"   %%  "akka-actor"    % akkaV,
     "com.typesafe.akka"   %%  "akka-testkit"  % akkaV   % "test",
     "com.typesafe.akka"   %%  "akka-slf4j" 	  % akkaV,   
-    "org.specs2"          %%  "specs2-core"   % "2.3.11" % "test",
-    "org.specs2"          %%  "specs2-mock"   % "2.3.11"  ,
-    "org.scalatest" % "scalatest_2.11" % "2.2.1" % "test",
     "junit" % "junit" % "4.11" % "test",
     "com.typesafe.slick" %% "slick" % "3.0.0",
     "com.typesafe.slick" %% "slick-codegen" % "3.0.0",
@@ -34,13 +31,13 @@ libraryDependencies ++= {
     "org.slf4j" % "slf4j-nop" % "1.6.4",
     "com.zaxxer" % "HikariCP-java6" % "2.3.6",
     "com.gettyimages" %% "spray-swagger" % "0.5.1",
-    "org.scala-lang" % "scala-reflect" % scalaVersion.value
+    "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+    "org.scalactic" %% "scalactic" % "2.2.6",
+    "org.scalatest" %% "scalatest" % "2.2.6" % "test",
+    "org.scalacheck" %% "scalacheck" % "1.12.5" % "test"
   )
   
 
 }
-
-libraryDependencies += "org.scalactic" %% "scalactic" % "2.2.6"
-libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.6" % "test"
 
 fork in run := true
