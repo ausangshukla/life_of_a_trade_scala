@@ -8,7 +8,7 @@ import com.lot.order.dao.OrderDao
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import com.lot.generators.OrderGen
+import com.lot.generators.OrderFactory
 
 class OrderDaoTest extends BaseTest {
 
@@ -16,7 +16,7 @@ class OrderDaoTest extends BaseTest {
 
     val security_id = 10
     // Ensure one is already filled
-    val o1 = OrderGen.gen(security_id = 10)
+    val o1 = OrderFactory.generate(security_id = 10)
     val fo1 = OrderDao.save(o1)
 
    val saved = wait(fo1)
@@ -31,9 +31,9 @@ class OrderDaoTest extends BaseTest {
 
     val security_id = 10
     // Ensure one is already filled
-    val o1 = OrderGen.gen(security_id = 10, buy_sell = OrderType.BUY, quantity=100, unfilled_qty=100.0)
-    val o2 = OrderGen.gen(security_id = 10, buy_sell = OrderType.SELL)
-    val o3 = OrderGen.gen(security_id = 10, buy_sell = OrderType.BUY)
+    val o1 = OrderFactory.generate(security_id = 10, buy_sell = OrderType.BUY, quantity=100, unfilled_qty=100.0)
+    val o2 = OrderFactory.generate(security_id = 10, buy_sell = OrderType.SELL)
+    val o3 = OrderFactory.generate(security_id = 10, buy_sell = OrderType.BUY)
 
     val fo1 = OrderDao.save(o1)
     val fo2 = OrderDao.save(o2)

@@ -81,7 +81,4 @@ class OrderMatcher(security_id: Long, unfilledOM: UnfilledOrderManager) extends 
   }
 
   
-
-  
-
 }
