@@ -12,11 +12,26 @@ import com.lot.generators.OrderGen
 
 class OrderDaoTest extends BaseTest {
 
+  "OrderDao" should "save order correctly" in {
+
+    val security_id = 10
+    // Ensure one is already filled
+    val o1 = OrderGen.gen(security_id = 10)
+    val fo1 = OrderDao.save(o1)
+
+   val saved = wait(fo1)
+
+    val o2 = wait(OrderDao.get(saved.id.get)).get
+    // Compare the input and output, but the id, created_at and updated_at have to be cloned
+    assert(o1.copy(id=saved.id).copyWithTS(o2) == o2)
+
+  }
+  
   "OrderDao" should "load the unfilled buys given a security" in {
 
     val security_id = 10
     // Ensure one is already filled
-    val o1 = OrderGen.gen(security_id = 10, buy_sell = OrderType.BUY, quantity=100, unfilled_qty=100)
+    val o1 = OrderGen.gen(security_id = 10, buy_sell = OrderType.BUY, quantity=100, unfilled_qty=100.0)
     val o2 = OrderGen.gen(security_id = 10, buy_sell = OrderType.SELL)
     val o3 = OrderGen.gen(security_id = 10, buy_sell = OrderType.BUY)
 

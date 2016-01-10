@@ -25,7 +25,14 @@ case class Order(id: Option[Long],
                  var unfilled_qty: Double,
                  price: Double,
                  created_at: Option[DateTime],
-                 updated_at: Option[DateTime]) 
+                 updated_at: Option[DateTime]) {
+  
+  
+  def copyWithTS(order:Order) = {
+    this.copy(created_at=order.created_at, updated_at=order.updated_at)
+  }
+  
+}
 
 
 object OrderType {
