@@ -41,3 +41,7 @@ libraryDependencies ++= {
 }
 
 fork in run := true
+
+// This is critical. parallelExecution has to be turned off as the test DB will 
+// have state from one test which will affect other tests 
+parallelExecution in ThisBuild := false

@@ -13,11 +13,12 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import org.joda.time.DateTime
 import com.lot.order.model.OrderType
 
-object OrderDao extends TableQuery(new OrderTable(_)) {
+object OrderDao extends TableQuery(new OrderTable(_)) with LazyLogging {
 
   val insertQuery = this returning this.map(_.id) into ((order, id) => order.copy(id = Some(id)))
   
-  def save(order: Order) : Future[Order] = {
+  def save(order: Order) : Future[Order] = {    
+    logger.debug(s"Saving $order")
     val action = insertQuery += order
     db.run(action)
   }

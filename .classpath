@@ -72,5 +72,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="/home/thimmaiah/.ivy2/cache/com.typesafe.slick/slick-codegen_2.11/jars/slick-codegen_2.11-3.0.0.jar"/>
 	<classpathentry kind="lib" path="/home/thimmaiah/.ivy2/cache/mysql/mysql-connector-java/jars/mysql-connector-java-5.1.38.jar"/>
+	<classpathentry kind="lib" path="/home/thimmaiah/.ivy2/cache/org.scalacheck/scalacheck_2.11/jars/scalacheck_2.11-1.12.5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
