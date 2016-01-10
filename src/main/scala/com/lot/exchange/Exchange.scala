@@ -63,7 +63,8 @@ class Exchange(name: String) extends Actor with ActorLogging  {
    */
   private def buildMatcher(security_id: Long) = {
     val buys = new ListBuffer[Order]()
-    val sells = new ListBuffer[Order]()    
+    val sells = new ListBuffer[Order]()
+    
     /*
      * TODO - re-examine if there is a non blocking way of doing this!
      * Load the unfilled orders from the DB. Note we need to block here, else the OrderMatcher 
@@ -71,10 +72,12 @@ class Exchange(name: String) extends Actor with ActorLogging  {
      */
     buys ++= Await.result(OrderDao.unfilled_buys(security_id), 5 seconds)
     sells ++= Await.result(OrderDao.unfilled_sells(security_id), 5 seconds)
+    
+    val unfliiedOM = new UnfilledOrderManager(security_id, buys, sells)
     /*
      * Create the OrderMatcher actor
      */
-    context.actorOf(Props(classOf[OrderMatcher], security_id, buys, sells), s"OrderMatcher-$security_id")        
+    context.actorOf(Props(classOf[OrderMatcher], security_id, unfliiedOM), s"OrderMatcher-$security_id")        
   }
 
 }
