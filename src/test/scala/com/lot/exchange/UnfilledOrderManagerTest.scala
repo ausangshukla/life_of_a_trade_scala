@@ -134,5 +134,32 @@ class UnfilledOrderManagerTest extends BaseTest {
      */
     matchedOrder shouldBe None
   }
+  
+  
+  "An UnfilledOrderManager" should "adjust both orders and remove both orders when there is an exact match" in {
+
+    val security_id = 10
+
+    /*
+     * Generate a random order & save it
+     */
+    val o1 = OrderFactory.generate(security_id = 10, buy_sell = OrderType.SELL, order_type = OrderType.MARKET, quantity = 100, unfilled_qty = 100)
+    val s1 = wait(OrderDao.save(o1))
+    val dbO1 = wait(OrderDao.get(s1.id.get)).get
+    val o2 = o1.copy(buy_sell = OrderType.BUY)
+    val s2 = wait(OrderDao.save(o2))
+    val dbO2 = wait(OrderDao.get(s2.id.get)).get
+
+    /*
+     * Start the UOM
+     */
+    val uom = UnfilledOrderManager(security_id)
+    uom.adjustOrders(dbO1, dbO2)
+    /*
+     * Ensure UOM finds no match
+     */
+    assert(uom.buys.length == 0)
+    assert(uom.sells.length == 0)
+  }
 
 }

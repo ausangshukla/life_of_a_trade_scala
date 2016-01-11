@@ -54,13 +54,6 @@ class UnfilledOrderManager(val security_id: Long,
     checkOrder(matchedOrder)
 
     if (order.unfilled_qty >= matchedOrder.unfilled_qty) {
-      /*
-       * Remove the matchedOrder from the appropriate queue, so it does not match up with new incoming orders
-       */
-      matchedOrder.buy_sell match {
-        case OrderType.BUY  => buys -= matchedOrder
-        case OrderType.SELL => sells -= matchedOrder
-      }
 
       /*
        * Fill the entire matchedOrder. Mark the order as partially filled
@@ -69,6 +62,12 @@ class UnfilledOrderManager(val security_id: Long,
       order.unfilled_qty = order.unfilled_qty - matchedOrder.unfilled_qty
       matchedOrder.unfilled_qty = 0
 
+      /*
+       * Remove the matchedOrder from the appropriate queue, so it does not match up with new incoming orders
+       */
+      dequeueOrder(matchedOrder)
+      dequeueOrder(order)
+
     } else {
       /*
        * Fill the entire order. Mark the matched order as partially filled
@@ -76,6 +75,11 @@ class UnfilledOrderManager(val security_id: Long,
       logger.info(s"order id ${order.id} filled with ${order.unfilled_qty} from matchedOrder ${matchedOrder.id}")
       matchedOrder.unfilled_qty = matchedOrder.unfilled_qty - order.unfilled_qty
       order.unfilled_qty = 0
+
+      /*
+       * Remove the order from the appropriate queue, so it does not match up with new incoming orders
+       */
+      dequeueOrder(order)
 
     }
 
@@ -87,20 +91,49 @@ class UnfilledOrderManager(val security_id: Long,
 
   }
 
+  def dequeueOrder(order: Order) = {
+    logger.info(s"De-queuing order $order")
+
+    checkOrder(order)
+    if (order.unfilled_qty == 0) {
+      /*
+     * Enqueue order and ensure they are sorted
+     */
+      order match {
+        case Order(id, _, OrderType.BUY, _, user_id, _, _, _, _, _, _) => {
+          buys -= order
+          buys.sortWith((left, right) => { left.price > right.price && left.id.get < right.id.get })
+        }
+        case Order(id, _, OrderType.SELL, _, user_id, _, _, _, _, _, _) => {
+          sells -= order
+          sells.sortWith((left, right) => { left.price < right.price && left.id.get < right.id.get })
+        }
+      }
+      true
+    } else {
+      logger.warn(s"De-queuing order $order failed. This order cannot be dequeued")
+      false
+    }
+
+  }
   /**
    * Enqueues the order into the buys or sells and ensures they are sorted
    */
   def enqueOrder(order: Order) = {
-    logger.info(s"Enqueuing order $order")
+    logger.info(s"En-queuing order $order")
 
     checkOrder(order)
-
+    /*
+     * Enqueue order and ensure they are sorted
+     */
     order match {
       case Order(id, _, OrderType.BUY, _, user_id, _, _, _, _, _, _) => {
         buys += order
+        buys.sortWith((left, right) => { left.price > right.price && left.id.get < right.id.get })
       }
       case Order(id, _, OrderType.SELL, _, user_id, _, _, _, _, _, _) => {
         sells += order
+        sells.sortWith((left, right) => { left.price < right.price && left.id.get < right.id.get })
       }
     }
 
