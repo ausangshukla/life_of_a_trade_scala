@@ -7,6 +7,9 @@ import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.collection.immutable.Seq
+import org.scalatest.Tag
+
+object FailingTest extends Tag("FailingTest")
 
 abstract class BaseTest extends FlatSpec with Matchers with OptionValues
     with Inside with Inspectors with BeforeAndAfterEach {

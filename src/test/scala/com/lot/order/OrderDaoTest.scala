@@ -19,19 +19,19 @@ class OrderDaoTest extends BaseTest {
     val o1 = OrderFactory.generate(security_id = 10)
     val fo1 = OrderDao.save(o1)
 
-   val saved = wait(fo1)
+    val saved = wait(fo1)
 
     val o2 = wait(OrderDao.get(saved.id.get)).get
     // Compare the input and output, but the id, created_at and updated_at have to be cloned
-    assert(o1.copy(id=saved.id).copyWithTS(o2) == o2)
+    assert(saved == o2)
 
   }
-  
+
   "OrderDao" should "load the unfilled buys given a security" in {
 
     val security_id = 10
     // Ensure one is already filled
-    val o1 = OrderFactory.generate(security_id = 10, buy_sell = OrderType.BUY, quantity=100, unfilled_qty=100.0)
+    val o1 = OrderFactory.generate(security_id = 10, buy_sell = OrderType.BUY, quantity = 100, unfilled_qty = 100.0)
     val o2 = OrderFactory.generate(security_id = 10, buy_sell = OrderType.SELL)
     val o3 = OrderFactory.generate(security_id = 10, buy_sell = OrderType.BUY)
 
@@ -39,11 +39,11 @@ class OrderDaoTest extends BaseTest {
     val fo2 = OrderDao.save(o2)
     val fo3 = OrderDao.save(o3)
 
-   val f = for {
+    val f = for {
       f1 <- fo1
       f2 <- fo2
       f3 <- fo3
-    } yield (f1,f2,f3)
+    } yield (f1, f2, f3)
 
     val orderList = wait(OrderDao.unfilled_buys(security_id))
     println(s" unfilled_buys = $orderList")
@@ -51,5 +51,4 @@ class OrderDaoTest extends BaseTest {
 
   }
 
-  
 }

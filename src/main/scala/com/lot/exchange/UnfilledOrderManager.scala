@@ -97,15 +97,15 @@ class UnfilledOrderManager(val security_id: Long,
     checkOrder(order)
     if (order.unfilled_qty == 0) {
       /*
-     * Enqueue order and ensure they are sorted
+     * Dequeue order which matches the id and ensure they are sorted
      */
       order match {
         case Order(id, _, OrderType.BUY, _, user_id, _, _, _, _, _, _) => {
-          buys -= order
+          buys --= buys.filter(_.id == order.id)
           buys.sortWith((left, right) => { left.price > right.price && left.id.get < right.id.get })
         }
         case Order(id, _, OrderType.SELL, _, user_id, _, _, _, _, _, _) => {
-          sells -= order
+          sells --= sells.filter(_.id == order.id)
           sells.sortWith((left, right) => { left.price < right.price && left.id.get < right.id.get })
         }
       }

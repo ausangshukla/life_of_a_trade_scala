@@ -15,11 +15,20 @@ import com.lot.order.model.OrderType
 
 object OrderDao extends TableQuery(new OrderTable(_)) with LazyLogging {
 
-  val insertQuery = this returning this.map(_.id) into ((order, id) => order.copy(id = Some(id)))
+  /**
+   * This is used to return the id of the inserted object
+   * http://stackoverflow.com/questions/31443505/slick-3-0-insert-and-then-get-auto-increment-value
+   */
+  val insertQuery = this returning this.map(o=>o.id) into ((order, id) => order.copy(id = Some(id)))
 
   def save(order: Order): Future[Order] = {
     logger.debug(s"Saving $order")
-    val action = insertQuery += order
+    /*
+     * Ensure the timestamps are updated
+     */
+    val now = new DateTime()
+    val o: Order = order.copy(created_at = Some(now), updated_at = Some(now))   
+    val action = insertQuery += o
     db.run(action)
   }
 
@@ -29,6 +38,9 @@ object OrderDao extends TableQuery(new OrderTable(_)) with LazyLogging {
 
   def update(order: Order): Future[Int] = {
     logger.debug(s"Updating $order")
+    /*
+     * Ensure the updated_at is set
+     */
     val now = new DateTime()
     val o: Order = order.copy(updated_at = Some(now))
     db.run(this.filter(_.id === order.id).update(o))
