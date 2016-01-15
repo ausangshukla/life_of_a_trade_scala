@@ -10,6 +10,7 @@ import scala.collection.immutable.Seq
 import org.scalatest.Tag
 
 object FailingTest extends Tag("FailingTest")
+object NewTest extends Tag("NewTest")
 
 abstract class BaseTest extends FlatSpec with Matchers with OptionValues
     with Inside with Inspectors with BeforeAndAfterEach {
@@ -27,4 +28,5 @@ abstract class BaseTest extends FlatSpec with Matchers with OptionValues
     val seq = Future.sequence(t)
     val f = Await.ready(seq, Duration.Inf)
   }
+ 
 }

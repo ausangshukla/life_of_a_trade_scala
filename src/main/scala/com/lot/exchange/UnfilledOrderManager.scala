@@ -23,22 +23,24 @@ class UnfilledOrderManager(val security_id: Long,
     order match {
       case Order(id, _, OrderType.BUY, OrderType.MARKET, user_id, _, _, _, _, _, _) =>
         sells.headOption match {
-          case Some(head) => Some(head)
+          case Some(head) => sells.headOption
           case _          => None
         }
       case Order(id, _, OrderType.SELL, OrderType.MARKET, user_id, _, _, _, _, _, _) =>
         buys.headOption match {
-          case Some(head) => Some(head)
+          case Some(head) => sells.headOption
           case _          => None
         }
       case Order(id, _, OrderType.BUY, OrderType.LIMIT, user_id, _, _, _, _, _, _) =>
         sells.headOption match {
-          case Some(head) if head.price < order.price => Some(head)
+          case Some(head) if head.order_type == OrderType.LIMIT && head.price < order.price => sells.headOption
+          case Some(head) if head.order_type == OrderType.MARKET => sells.headOption
           case _                                      => None
         }
       case Order(id, _, OrderType.SELL, OrderType.LIMIT, user_id, _, _, _, _, _, _) =>
         buys.headOption match {
-          case Some(head) if head.price > order.price => Some(head)
+          case Some(head) if head.order_type == OrderType.LIMIT && head.price > order.price => sells.headOption
+          case Some(head) if head.order_type == OrderType.MARKET => sells.headOption
           case _                                      => None
         }
     }
@@ -61,12 +63,14 @@ class UnfilledOrderManager(val security_id: Long,
       logger.info(s"order id ${order.id} filled with ${matchedOrder.unfilled_qty} from matchedOrder ${matchedOrder.id}")
       order.unfilled_qty = order.unfilled_qty - matchedOrder.unfilled_qty
       matchedOrder.unfilled_qty = 0
-
+      
       /*
        * Remove the matchedOrder from the appropriate queue, so it does not match up with new incoming orders
        */
       dequeueOrder(matchedOrder)
-      dequeueOrder(order)
+      if (order.unfilled_qty == 0) { 
+        dequeueOrder(order)
+      }
 
     } else {
       /*
@@ -88,7 +92,7 @@ class UnfilledOrderManager(val security_id: Long,
      */
     OrderDao.update(order)
     OrderDao.update(matchedOrder)
-
+    println(s"buys = $buys \nsells=$sells")
   }
 
   def dequeueOrder(order: Order) = {
