@@ -17,6 +17,7 @@ import akka.actor.Props
 import com.lot.trade.model.Trade
 import org.joda.time.DateTime
 import com.lot.trade.model.TradeMessage
+import com.lot.trade.model.TradeState
 
 /**
  * The matcher for a particular security
@@ -101,13 +102,13 @@ class OrderMatcher(security_id: Long, unfilledOM: UnfilledOrderManager) extends 
       security_id = order.security_id,
       quantity = quantity, price = 0.0,
       user_id = order.user_id, order_id = order.id.get,
-      matched_order_id = matchedOrder.id.get, None, None)
+      matched_order_id = matchedOrder.id.get, state= TradeState.ACTIVE, None, None)
 
     val counter_trade = Trade(id = None, trade_date = new DateTime(), settlement_date = new DateTime(),
       security_id = order.security_id,
       quantity = quantity, price = 0.0,
       user_id = matchedOrder.user_id, order_id = matchedOrder.id.get,
-      matched_order_id = order.id.get, None, None)
+      matched_order_id = order.id.get, state= TradeState.ACTIVE, None, None)
 
     /*
      * Send it
