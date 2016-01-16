@@ -119,7 +119,7 @@ class UOMMatchTest extends BaseTest with TableDrivenPropertyChecks {
         uom.adjustOrders(buyOrder, sellOrder)
 
         /*
-		     * Ensure DB is updated with correct state 
+		     * load the DB versions post adjustment 
     		 */
         val dbBuyOrder = wait(OrderDao.get(buyOrder.id.get)).get
         val dbSellOrder = wait(OrderDao.get(sellOrder.id.get)).get
@@ -127,20 +127,35 @@ class UOMMatchTest extends BaseTest with TableDrivenPropertyChecks {
         
         buyOrder.unfilled_qty - sellOrder.unfilled_qty match {
           case x if x == 0 => {
+            // UOM queues are updated
             assert(uom.buys.length == 0)
             assert(uom.sells.length == 0)
+            // unfilled_qty is updated
+            assert(buyOrder.unfilled_qty == 0)
+            assert(sellOrder.unfilled_qty == 0)
+            // DB unfilled_qty is updated
             assert(dbBuyOrder.unfilled_qty == 0)
             assert(dbSellOrder.unfilled_qty == 0)
           }
           case x if x > 0 => {
+            // UOM queues are updated
             assert(uom.buys.length == 1)
             assert(uom.sells.length == 0)
+            // unfilled_qty is updated
+            assert(buyOrder.unfilled_qty == remaining_unfilled)
+            assert(sellOrder.unfilled_qty == 0)
+            // DB unfilled_qty is updated
             assert(dbBuyOrder.unfilled_qty == remaining_unfilled)
             assert(dbSellOrder.unfilled_qty == 0)
           }
           case x if x < 0 => {
+            // UOM queues are updated
             assert(uom.buys.length == 0)
             assert(uom.sells.length == 1)
+            // unfilled_qty is updated
+            assert(buyOrder.unfilled_qty == 0)
+            assert(sellOrder.unfilled_qty == remaining_unfilled)
+            // DB unfilled_qty is updated
             assert(dbBuyOrder.unfilled_qty == 0)
             assert(dbSellOrder.unfilled_qty == remaining_unfilled)
           }
