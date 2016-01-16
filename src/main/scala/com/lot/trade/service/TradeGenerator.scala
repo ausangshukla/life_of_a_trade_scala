@@ -6,6 +6,7 @@ import com.lot.trade.model.Trade
 import akka.actor.ActorLogging
 import com.lot.trade.dao.TradeDao
 import com.lot.trade.model.TradeMessage
+import com.lot.trade.model.TradeState
 
 class TradeGenerator extends Actor with ActorLogging {
 
@@ -21,14 +22,17 @@ class TradeGenerator extends Actor with ActorLogging {
   }
 
   def handleNewTrade(trade: Trade) = {
-
+    log.info(s"handleNewTrade: $trade")
+    TradeDao.save(trade)
   }
   
   def handleModifyTrade(trade: Trade) = {
-
+    log.info(s"handleModifyTrade: $trade")
+    TradeDao.update(trade)
   }
   
   def handleCancelTrade(trade: Trade) = {
-
+    log.info(s"handleCancelTrade: $trade")
+    TradeDao.update(trade.copy(state=TradeState.CANCELLED))
   }
 }

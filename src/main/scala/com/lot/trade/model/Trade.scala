@@ -19,9 +19,18 @@ case class Trade(id: Option[Long],
                  trade_date: DateTime, settlement_date: DateTime,
                  security_id: Long, quantity: Double, price: Double,
                  user_id: Long, order_id: Long, matched_order_id: Long,
+                 state: String,
                  created_at: Option[DateTime],
                  updated_at: Option[DateTime])
 
+/**
+ * The allowed states for the trade to be in
+ */
+object TradeState {
+  val ACTIVE = "Active"
+  val CANCELLED = "Cancelled"
+  val SETTLED = "Settled"
+}
 /**
  * DB schema
  */
@@ -35,10 +44,11 @@ class TradeTable(tag: Tag) extends Table[Trade](tag, "trades") {
   def user_id = column[Long]("user_id")
   def order_id = column[Long]("order_id")
   def matched_order_id = column[Long]("matched_order_id")
+  def state = column[String]("state")
   def created_at = column[DateTime]("created_at")
   def updated_at = column[DateTime]("updated_at")
 
-  def * = (id.?, trade_date, settlement_date, security_id, quantity, price, user_id, order_id, matched_order_id, created_at.?, updated_at.?) <> (Trade.tupled, Trade.unapply)
+  def * = (id.?, trade_date, settlement_date, security_id, quantity, price, user_id, order_id, matched_order_id, state, created_at.?, updated_at.?) <> (Trade.tupled, Trade.unapply)
 }
 
 /**
@@ -46,7 +56,7 @@ class TradeTable(tag: Tag) extends Table[Trade](tag, "trades") {
  */
 object TradeJsonProtocol extends DefaultJsonProtocol {
   import com.lot.utils.CustomJson._
-  implicit val tradeFormat = jsonFormat11(Trade)
+  implicit val tradeFormat = jsonFormat12(Trade)
 }
 
 /**
