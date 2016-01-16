@@ -19,30 +19,35 @@ class UnfilledOrderManager(val security_id: Long,
   def findMatch(order: Order): Option[Order] = {
 
     checkOrder(order)
-
-    order match {
-      case Order(id, _, OrderType.BUY, OrderType.MARKET, user_id, _, _, _, _, _, _) =>
-        sells.headOption match {
-          case Some(head) => sells.headOption
-          case _          => None
-        }
-      case Order(id, _, OrderType.SELL, OrderType.MARKET, user_id, _, _, _, _, _, _) =>
-        buys.headOption match {
-          case Some(head) => sells.headOption
-          case _          => None
-        }
-      case Order(id, _, OrderType.BUY, OrderType.LIMIT, user_id, _, _, _, _, _, _) =>
-        sells.headOption match {
-          case Some(head) if head.order_type == OrderType.LIMIT && head.price < order.price => sells.headOption
-          case Some(head) if head.order_type == OrderType.MARKET => sells.headOption
-          case _                                      => None
-        }
-      case Order(id, _, OrderType.SELL, OrderType.LIMIT, user_id, _, _, _, _, _, _) =>
-        buys.headOption match {
-          case Some(head) if head.order_type == OrderType.LIMIT && head.price > order.price => sells.headOption
-          case Some(head) if head.order_type == OrderType.MARKET => sells.headOption
-          case _                                      => None
-        }
+    logger.debug(s"findMatch: $order buys: $buys sells: $sells")
+    if (order.unfilled_qty > 0) {
+      order match {
+        case Order(id, _, OrderType.BUY, OrderType.MARKET, user_id, _, _, _, _, _, _) =>
+          sells.headOption match {
+            case Some(head) => sells.headOption
+            case _          => None
+          }
+        case Order(id, _, OrderType.SELL, OrderType.MARKET, user_id, _, _, _, _, _, _) =>
+          buys.headOption match {
+            case Some(head) => buys.headOption
+            case _          => None
+          }
+        case Order(id, _, OrderType.BUY, OrderType.LIMIT, user_id, _, _, _, _, _, _) =>
+          sells.headOption match {
+            case Some(head) if head.order_type == OrderType.LIMIT && head.price <= order.price => sells.headOption
+            case Some(head) if head.order_type == OrderType.MARKET => sells.headOption
+            case _ => None
+          }
+        case Order(id, _, OrderType.SELL, OrderType.LIMIT, user_id, _, _, _, _, _, _) =>
+          buys.headOption match {
+            case Some(head) if head.order_type == OrderType.LIMIT && head.price >= order.price => buys.headOption
+            case Some(head) if head.order_type == OrderType.MARKET => buys.headOption
+            case _ => None
+          }
+      }
+    } else {
+      logger.debug(s"findMatch: Order with unfilled_qty = 0 not matched")
+      None
     }
 
   }
@@ -63,12 +68,12 @@ class UnfilledOrderManager(val security_id: Long,
       logger.info(s"order id ${order.id} filled with ${matchedOrder.unfilled_qty} from matchedOrder ${matchedOrder.id}")
       order.unfilled_qty = order.unfilled_qty - matchedOrder.unfilled_qty
       matchedOrder.unfilled_qty = 0
-      
+
       /*
        * Remove the matchedOrder from the appropriate queue, so it does not match up with new incoming orders
        */
       dequeueOrder(matchedOrder)
-      if (order.unfilled_qty == 0) { 
+      if (order.unfilled_qty == 0) {
         dequeueOrder(order)
       }
 
