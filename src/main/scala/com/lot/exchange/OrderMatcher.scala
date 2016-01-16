@@ -9,6 +9,11 @@ import akka.actor.ActorLogging
 import scala.collection.mutable.MutableList
 import scala.collection.mutable.ListBuffer
 import com.lot.order.dao.OrderDao
+import com.lot.exchange.Message._
+import akka.routing.FromConfig
+import com.lot.trade.service.TradeGenerator
+import com.lot.trade.service.TradeGenerator
+import akka.actor.Props
 
 /**
  * The matcher for a particular security
@@ -23,7 +28,7 @@ class OrderMatcher(security_id: Long, unfilledOM: UnfilledOrderManager) extends 
     
   }
   
-  import com.lot.exchange.Message._
+  
 
   def receive = {
     case NewOrder(order, at)    => { handleNewOrder(order) }
@@ -78,6 +83,8 @@ class OrderMatcher(security_id: Long, unfilledOM: UnfilledOrderManager) extends 
      * Send to trade booking actor
      */
     log.info(s"Generating trade for order $order with matchedOrder $matchedOrder")
+    val tradeGenerator = context.actorOf(Props(classOf[TradeGenerator]), "tradeRouter")
+    
   }
 
   
