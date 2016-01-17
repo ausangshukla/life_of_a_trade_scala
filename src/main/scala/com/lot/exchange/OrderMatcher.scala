@@ -18,6 +18,7 @@ import com.lot.trade.model.Trade
 import org.joda.time.DateTime
 import com.lot.trade.model.TradeMessage
 import com.lot.trade.model.TradeState
+import akka.actor.ActorRef
 
 /**
  * The matcher for a particular security
@@ -26,12 +27,8 @@ import com.lot.trade.model.TradeState
  * @buys : The list of buy orders sorted by price / time priority
  * @sells : The list of sell orders sorted by price / time priority
  */
-class OrderMatcher(security_id: Long, unfilledOM: UnfilledOrderManager) extends Actor with ActorLogging {
+class OrderMatcher(security_id: Long, unfilledOM: UnfilledOrderManager, tradeGenerator: ActorRef) extends Actor with ActorLogging {
 
-  /**
-   * The actor that handles trade creation / enrichment
-   */
-  val tradeGenerator = context.actorOf(Props(classOf[TradeGenerator]), "tradeRouter")
 
   override def preStart = {
   }

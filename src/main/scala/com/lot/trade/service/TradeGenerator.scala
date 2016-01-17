@@ -11,14 +11,14 @@ import com.lot.trade.model.TradeState
 class TradeGenerator extends Actor with ActorLogging {
 
   override def preStart = {
-
+    
   }
 
   def receive = {
     case TradeMessage.New(trade)    => { handleNewTrade(trade) }
     case TradeMessage.Modify(trade) => { handleModifyTrade(trade) }
     case TradeMessage.Cancel(trade) => { handleCancelTrade(trade) }
-    case _                          => {}
+    case msg                          => { log.error(s"Received unknown msg $msg")}
   }
 
   def handleNewTrade(trade: Trade) = {

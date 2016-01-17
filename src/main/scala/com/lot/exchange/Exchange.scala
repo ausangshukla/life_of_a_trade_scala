@@ -17,14 +17,20 @@ import scala.collection.immutable.Map
 import akka.actor.ActorLogging
 import scala.collection.mutable.ListBuffer
 import com.lot.order.dao.OrderDao
+import com.lot.trade.service.TradeGenerator
+import akka.routing.FromConfig
 
-class Exchange(name: String) extends Actor with ActorLogging  {
+class Exchange(name: String, tradeGenerator: ActorRef) extends Actor with ActorLogging  {
 
   import com.lot.exchange.Message._
   implicit val timeout = Timeout(5.seconds)
 
   var matchers = new HashMap[Long, ActorRef]
-
+  
+  override def preStart = {
+    tradeGenerator ! "Started"
+  }
+  
   /**
    * This simply finds the appropriate matcher and forwards the message
    */
@@ -65,7 +71,7 @@ class Exchange(name: String) extends Actor with ActorLogging  {
     /*
      * Create the OrderMatcher actor
      */
-    context.actorOf(Props(classOf[OrderMatcher], security_id, unfilledOM), s"OrderMatcher-$security_id")        
+    context.actorOf(Props(classOf[OrderMatcher], security_id, unfilledOM, tradeGenerator), s"OrderMatcher-$security_id")        
   }
 
 }
@@ -75,19 +81,35 @@ class Exchange(name: String) extends Actor with ActorLogging  {
  */
 object Exchange extends ConfigurationModuleImpl with LazyLogging {
   
-  val NYSE = "NYSE"
+  /*
+   * Some constants
+   */
   val NASDAQ = "NASDAQ"
-  
-  var exchanges = new HashMap[String, ActorRef]()
+  val NYSE = "NYSE"
   
   val system = ActorSystem("lot-om", config)
   
+  /**
+   * The actor that handles trade creation / enrichment
+   */
+  val tradeGenerator = system.actorOf(FromConfig.props(Props[TradeGenerator]), "tradeRouter")
+  
+  /**
+   * The map of all exchanges and thier actorRefs
+   */
+  var exchanges = new HashMap[String, ActorRef]()
+  
+  /*
+   * Create all the exchanges specified in the config
+   */
   val entries = config.getConfig("exchanges").entrySet().iterator()
   while(entries.hasNext()) {
     val kv = entries.next()
     val key = kv.getKey()
-    
-    val e = system.actorOf(Props(classOf[Exchange], key), name=key)
+    /*
+     * Pass in the exchange name and the tradeGenerator
+     */
+    val e = system.actorOf(Props(classOf[Exchange], key, tradeGenerator), name=key)
     
     logger.info(s"Started exchange $key on " + e.path)
     exchanges += (key -> e)

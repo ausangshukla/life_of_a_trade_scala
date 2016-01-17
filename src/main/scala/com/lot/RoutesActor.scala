@@ -13,6 +13,7 @@ import com.lot.order.service.OrderService
 import com.lot.utils.CORSSupport
 import com.lot.security.service.SecurityService
 import akka.actor.ActorLogging
+import com.lot.trade.service.TradeService
 
 class RoutesActor(modules: Configuration) extends Actor with 
   HttpService with StaticService with CORSSupport with ActorLogging {
@@ -24,7 +25,8 @@ class RoutesActor(modules: Configuration) extends Actor with
   def receive = runRoute(respondWithCORS(conf.getString("origin.domain")) {
       OrderService.endpoints ~ 
       UserService.endpoints ~ 
-      SecurityService.endpoints ~ 
+      SecurityService.endpoints ~
+      TradeService.endpoints ~ 
       staticRoute })
  
 }
