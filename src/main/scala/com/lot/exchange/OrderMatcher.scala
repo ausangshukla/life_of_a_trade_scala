@@ -77,13 +77,18 @@ class OrderMatcher(security_id: Long, unfilledOM: UnfilledOrderManager,
         /*
          * Update price of the security
          */
-        generatePrice(order, mo)
+        current_price = generatePrice(order, mo)
 
         /*
-         * Generate a trade 
+         * Generate the trades 
          */
-        generateTrade(order, mo)
-
+        val(trade, counter_trade) = generateTrades(order, mo)
+        
+        /*
+         * Send it off to be booked
+         */        
+        bookTrades(trade,counter_trade)
+        
         /*
          * Ensure the unfilled_qty is adjusted for both orders
          */
@@ -114,7 +119,7 @@ class OrderMatcher(security_id: Long, unfilledOM: UnfilledOrderManager,
     /*
      * Set the current price, based on the order and matchedOrder
      */
-    current_price = orderPrices match {
+    val price = orderPrices match {
       case (OrderType.MARKET, mop, OrderType.MARKET, mop2) => current_price // Its the market price
       case (OrderType.MARKET, mop, OrderType.LIMIT, lop)   => lop // Its the limit price 
       case (OrderType.LIMIT, lop, OrderType.MARKET, mop)   => lop // Its the limit price
@@ -124,12 +129,17 @@ class OrderMatcher(security_id: Long, unfilledOM: UnfilledOrderManager,
     /*
      * Broadcast the price
      */
-    securityManager ! PriceMessage.Set(Price(order.security_id, current_price))
+    securityManager ! PriceMessage.Set(Price(order.security_id, price))
+    
+    /*
+     * Return the generated price
+     */
+    price
   }
   /**
    * Generates a trade and sends it off for booking
    */
-  private def generateTrade(order: Order, matchedOrder: Order) = {
+  private def generateTrades(order: Order, matchedOrder: Order) = {
     /*
      * Send to trade booking actor
      */
@@ -156,12 +166,20 @@ class OrderMatcher(security_id: Long, unfilledOM: UnfilledOrderManager,
       user_id = matchedOrder.user_id, order_id = matchedOrder.id.get,
       matched_order_id = order.id.get, state = TradeState.ACTIVE, None, None)
 
+      
+    /*
+     * return the generated trades
+     */
+    (trade, counter_trade)
+  }
+  
+  
+  private def bookTrades(trade: Trade, counter_trade: Trade) = {
     /*
      * Send it
      */
     tradeGenerator ! TradeMessage.New(trade)
     tradeGenerator ! TradeMessage.New(counter_trade)
-
+  
   }
-
 }
