@@ -19,8 +19,9 @@ import scala.collection.mutable.ListBuffer
 import com.lot.order.dao.OrderDao
 import com.lot.trade.service.TradeGenerator
 import akka.routing.FromConfig
+import com.lot.trade.service.SecurityManager
 
-class Exchange(name: String, tradeGenerator: ActorRef) extends Actor with ActorLogging  {
+class Exchange(name: String, tradeGenerator: ActorRef, securityManager: ActorRef) extends Actor with ActorLogging  {
 
   import com.lot.exchange.Message._
   implicit val timeout = Timeout(5.seconds)
@@ -71,7 +72,7 @@ class Exchange(name: String, tradeGenerator: ActorRef) extends Actor with ActorL
     /*
      * Create the OrderMatcher actor
      */
-    context.actorOf(Props(classOf[OrderMatcher], security_id, unfilledOM, tradeGenerator), s"OrderMatcher-$security_id")        
+    context.actorOf(Props(classOf[OrderMatcher], security_id, unfilledOM, tradeGenerator, securityManager), s"OrderMatcher-$security_id")        
   }
 
 }
@@ -93,7 +94,12 @@ object Exchange extends ConfigurationModuleImpl with LazyLogging {
    * The actor that handles trade creation / enrichment for the exchange
    * NOTE: Actually used inside the OrderMatcher post matching to create trades
    */
-  val tradeGenerator = system.actorOf(FromConfig.props(Props[TradeGenerator]), "tradeRouter")
+  val tradeGenerator = system.actorOf(FromConfig.props(Props[TradeGenerator]), "tradeGeneratorRouter")
+  
+  /*
+   * The actor that handles price update and broadcasting of prices
+   */
+  val securityManager = system.actorOf(FromConfig.props(Props[SecurityManager]), "securityManagerRouter")
   
   /*
    * The map of all exchanges and their actorRefs
@@ -110,7 +116,7 @@ object Exchange extends ConfigurationModuleImpl with LazyLogging {
     /*
      * Pass in the exchange name and the tradeGenerator
      */
-    val e = system.actorOf(Props(classOf[Exchange], key, tradeGenerator), name=key)
+    val e = system.actorOf(Props(classOf[Exchange], key, tradeGenerator, securityManager), name=key)
     
     logger.info(s"Started exchange $key on " + e.path)
     exchanges += (key -> e)

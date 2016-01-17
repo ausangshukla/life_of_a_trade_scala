@@ -46,6 +46,13 @@ object SecurityDao extends TableQuery(new SecurityTable(_)) {
     db.run(this.filter(_.id === security.id).update(new_security))
   }
   
+  def updatePrice(security_id: Long, newPrice: Double) = {
+    // update the updated_at timestamp
+    val now = new DateTime();
+    db.run( this.filter(_.id === security_id).map(s=>s.price)update(newPrice) )
+  }
+  
+  
   /**
    * Deletes the security from the DB. Warning this is permanent and irreversable
    * @security This has the id which will be removed from the DB

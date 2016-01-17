@@ -1,5 +1,6 @@
 package com.lot.exchange
 
+import akka.pattern.ask
 import akka.actor.Actor
 import com.typesafe.scalalogging.LazyLogging
 import com.lot.order.model.Order
@@ -19,6 +20,11 @@ import org.joda.time.DateTime
 import com.lot.trade.model.TradeMessage
 import com.lot.trade.model.TradeState
 import akka.actor.ActorRef
+import com.lot.security.model.Price
+import com.lot.security.model.PriceMessage
+import scala.concurrent.duration._
+import akka.util.Timeout
+import scala.concurrent.Await
 
 /**
  * The matcher for a particular security
@@ -27,10 +33,25 @@ import akka.actor.ActorRef
  * @buys : The list of buy orders sorted by price / time priority
  * @sells : The list of sell orders sorted by price / time priority
  */
-class OrderMatcher(security_id: Long, unfilledOM: UnfilledOrderManager, tradeGenerator: ActorRef) extends Actor with ActorLogging {
+class OrderMatcher(security_id: Long, unfilledOM: UnfilledOrderManager,
+                   tradeGenerator: ActorRef, securityManager: ActorRef) extends Actor with ActorLogging {
 
+  var current_price: Double = 0.0
 
   override def preStart = {
+    /*
+     * Load the price of the security from the securityManager
+     */
+    implicit val timeout = Timeout(5 second)
+    /*
+     * Ask for the price
+     */
+    val futurePrice = securityManager ? PriceMessage.Get(Price(security_id, current_price))
+    /*
+     * Wait till we get it
+     */
+    val value = Await.result(futurePrice, 5 seconds).asInstanceOf[PriceMessage.Value]
+    current_price = value.price.price
   }
 
   def receive = {
@@ -54,13 +75,20 @@ class OrderMatcher(security_id: Long, unfilledOM: UnfilledOrderManager, tradeGen
     matchedOrder match {
       case Some(mo) => {
         /*
+         * Update price of the security
+         */
+        generatePrice(order, mo)
+
+        /*
          * Generate a trade 
          */
         generateTrade(order, mo)
+
         /*
          * Ensure the unfilled_qty is adjusted for both orders
          */
         unfilledOM.adjustOrders(order, mo)
+
         /*
          * Recursively call handleNewOrder until all the quantity is filled or the order is enqueued
          */
@@ -77,6 +105,27 @@ class OrderMatcher(security_id: Long, unfilledOM: UnfilledOrderManager, tradeGen
     }
   }
 
+  /**
+   * Generates a price sends it off for saving in the DB to the security service
+   */
+  private def generatePrice(order: Order, matchedOrder: Order) = {
+    val orderPrices = (order.order_type, order.price, matchedOrder.order_type, matchedOrder.price)
+
+    /*
+     * Set the current price, based on the order and matchedOrder
+     */
+    current_price = orderPrices match {
+      case (OrderType.MARKET, mop, OrderType.MARKET, mop2) => current_price // Its the market price
+      case (OrderType.MARKET, mop, OrderType.LIMIT, lop)   => lop // Its the limit price 
+      case (OrderType.LIMIT, lop, OrderType.MARKET, mop)   => lop // Its the limit price
+      case (OrderType.LIMIT, lop, OrderType.LIMIT, lop2)   => lop // Its the limit of the incoming order     
+    }
+
+    /*
+     * Broadcast the price
+     */
+    securityManager ! PriceMessage.Set(Price(order.security_id, current_price))
+  }
   /**
    * Generates a trade and sends it off for booking
    */
@@ -97,15 +146,15 @@ class OrderMatcher(security_id: Long, unfilledOM: UnfilledOrderManager, tradeGen
      */
     val trade = Trade(id = None, trade_date = new DateTime(), settlement_date = new DateTime(),
       security_id = order.security_id,
-      quantity = quantity, price = 0.0, buy_sell = order.buy_sell,
+      quantity = quantity, price = current_price, buy_sell = order.buy_sell,
       user_id = order.user_id, order_id = order.id.get,
-      matched_order_id = matchedOrder.id.get, state= TradeState.ACTIVE, None, None)
+      matched_order_id = matchedOrder.id.get, state = TradeState.ACTIVE, None, None)
 
     val counter_trade = Trade(id = None, trade_date = new DateTime(), settlement_date = new DateTime(),
       security_id = order.security_id,
-      quantity = quantity, price = 0.0, buy_sell = matchedOrder.buy_sell,
+      quantity = quantity, price = current_price, buy_sell = matchedOrder.buy_sell,
       user_id = matchedOrder.user_id, order_id = matchedOrder.id.get,
-      matched_order_id = order.id.get, state= TradeState.ACTIVE, None, None)
+      matched_order_id = order.id.get, state = TradeState.ACTIVE, None, None)
 
     /*
      * Send it
