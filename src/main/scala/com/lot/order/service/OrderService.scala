@@ -17,9 +17,8 @@ import com.lot.exchange.Exchange
 
 object OrderService extends BaseService {
 
-  import com.lot.order.model.OrderJsonProtocol._
   import com.lot.Json4sProtocol._
-
+  
   val dao = OrderDao
   
   val list = getJson {

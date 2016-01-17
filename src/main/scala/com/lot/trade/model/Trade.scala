@@ -11,6 +11,7 @@ import spray.json.JsString
 import spray.json.JsValue
 import spray.json.DeserializationException
 import org.joda.time.format.ISODateTimeFormat
+import com.lot.utils.CustomJson
 
 /**
  * The model class
@@ -55,8 +56,7 @@ class TradeTable(tag: Tag) extends Table[Trade](tag, "trades") {
 /**
  * To convert to and from JSON
  */
-object TradeJsonProtocol extends DefaultJsonProtocol {
-  import com.lot.utils.CustomJson._
+object TradeJsonProtocol extends CustomJson {
   implicit val tradeFormat = jsonFormat13(Trade)
 }
 

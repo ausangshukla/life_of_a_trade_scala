@@ -11,6 +11,7 @@ import spray.json.JsString
 import spray.json.JsValue
 import spray.json.DeserializationException
 import org.joda.time.format.ISODateTimeFormat
+import com.lot.utils.CustomJson
 
 case class Security(id: Option[Long],
     name: String,  ticker: String,  description: String,  price: Double,  asset_class: String,  sector: String,  region: String,  tick_size: Int,  liquidity: String, 
@@ -34,8 +35,7 @@ class SecurityTable(tag: Tag) extends Table[Security](tag, "securities") {
   def * = (id.?,  name,  ticker,  description,  price,  asset_class,  sector,  region,  tick_size,  liquidity,  created_at.?, updated_at.?) <> (Security.tupled, Security.unapply)
 }
 
-object SecurityJsonProtocol extends DefaultJsonProtocol {
-  import com.lot.utils.CustomJson._
+object SecurityJsonProtocol extends CustomJson {
   implicit val securityFormat = jsonFormat12(Security)
 }
 

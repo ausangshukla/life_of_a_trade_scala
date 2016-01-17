@@ -13,6 +13,8 @@ import spray.json.DeserializationException
 import org.joda.time.format.ISODateTimeFormat
 import java.sql.Timestamp
 import com.lot.security.model.SecurityTable
+import com.lot.utils.CustomJson
+
 
 
 case class Order(id: Option[Long],
@@ -57,8 +59,7 @@ class OrderTable(tag: Tag) extends Table[Order](tag, "orders") {
 
 
 
-object OrderJsonProtocol extends DefaultJsonProtocol {
-  import com.lot.utils.CustomJson._
+object OrderJsonProtocol extends CustomJson {
   implicit val orderFormat = jsonFormat11(Order)
 }
 

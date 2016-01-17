@@ -4,31 +4,21 @@ import org.joda.time.format.ISODateTimeFormat
 import spray.json.RootJsonFormat
 import org.joda.time.DateTime
 import spray.json._
+import org.joda.time.format.DateTimeFormatter
+import spray.httpx.SprayJsonSupport
 
-object CustomJson {
+trait CustomJson extends DefaultJsonProtocol {
 
-  implicit object DateTimeFormat extends RootJsonFormat[DateTime] {
+  implicit object DateJsonFormat extends RootJsonFormat[DateTime] {
 
-    val formatter = ISODateTimeFormat.basicDateTimeNoMillis
+    private val parserISO: DateTimeFormatter = ISODateTimeFormat.dateTimeNoMillis();
 
-    def write(obj: DateTime): JsValue = {
-      JsString(formatter.print(obj))
-    }
-
-    def read(json: JsValue): DateTime = json match {
-      case JsString(s) => try {
-        formatter.parseDateTime(s)
-      } catch {
-        case t: Throwable => error(s)
-      }
-      case _ =>
-        error(json.toString())
-    }
-
-    def error(v: Any): DateTime = {
-      val example = formatter.print(0)
-      throw new Exception(f"'$v' is not a valid date value. Dates must be in compact ISO-8601 format, e.g. '$example'")
+    override def write(obj: DateTime) = JsString(parserISO.print(obj))
+    
+    override def read(json: JsValue): DateTime = json match {
+      case JsString(s) => parserISO.parseDateTime(s)
+      case _           => throw new DeserializationException("Invalid DateTime")
     }
   }
-
+ 
 }

@@ -9,7 +9,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 object TradeService extends BaseService {
 
-  import com.lot.trade.model.TradeJsonProtocol._
   import com.lot.Json4sProtocol._
 
   val dao = TradeDao

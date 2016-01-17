@@ -9,7 +9,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 object SecurityService extends BaseService {
 
-  import com.lot.security.model.SecurityJsonProtocol._
   import com.lot.Json4sProtocol._
 
   val dao = SecurityDao
