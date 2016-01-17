@@ -97,13 +97,13 @@ class OrderMatcher(security_id: Long, unfilledOM: UnfilledOrderManager, tradeGen
      */
     val trade = Trade(id = None, trade_date = new DateTime(), settlement_date = new DateTime(),
       security_id = order.security_id,
-      quantity = quantity, price = 0.0,
+      quantity = quantity, price = 0.0, buy_sell = order.buy_sell,
       user_id = order.user_id, order_id = order.id.get,
       matched_order_id = matchedOrder.id.get, state= TradeState.ACTIVE, None, None)
 
     val counter_trade = Trade(id = None, trade_date = new DateTime(), settlement_date = new DateTime(),
       security_id = order.security_id,
-      quantity = quantity, price = 0.0,
+      quantity = quantity, price = 0.0, buy_sell = matchedOrder.buy_sell,
       user_id = matchedOrder.user_id, order_id = matchedOrder.id.get,
       matched_order_id = order.id.get, state= TradeState.ACTIVE, None, None)
 

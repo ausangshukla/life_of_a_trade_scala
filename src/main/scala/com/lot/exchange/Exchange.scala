@@ -89,13 +89,14 @@ object Exchange extends ConfigurationModuleImpl with LazyLogging {
   
   val system = ActorSystem("lot-om", config)
   
-  /**
-   * The actor that handles trade creation / enrichment
+  /*
+   * The actor that handles trade creation / enrichment for the exchange
+   * NOTE: Actually used inside the OrderMatcher post matching to create trades
    */
   val tradeGenerator = system.actorOf(FromConfig.props(Props[TradeGenerator]), "tradeRouter")
   
-  /**
-   * The map of all exchanges and thier actorRefs
+  /*
+   * The map of all exchanges and their actorRefs
    */
   var exchanges = new HashMap[String, ActorRef]()
   

@@ -17,7 +17,7 @@ import org.joda.time.format.ISODateTimeFormat
  */
 case class Trade(id: Option[Long],
                  trade_date: DateTime, settlement_date: DateTime,
-                 security_id: Long, quantity: Double, price: Double,
+                 security_id: Long, quantity: Double, price: Double, buy_sell: String,
                  user_id: Long, order_id: Long, matched_order_id: Long,
                  state: String,
                  created_at: Option[DateTime],
@@ -41,6 +41,7 @@ class TradeTable(tag: Tag) extends Table[Trade](tag, "trades") {
   def security_id = column[Long]("security_id")
   def quantity = column[Double]("quantity")
   def price = column[Double]("price")
+  def buy_sell = column[String]("buy_sell")
   def user_id = column[Long]("user_id")
   def order_id = column[Long]("order_id")
   def matched_order_id = column[Long]("matched_order_id")
@@ -48,7 +49,7 @@ class TradeTable(tag: Tag) extends Table[Trade](tag, "trades") {
   def created_at = column[DateTime]("created_at")
   def updated_at = column[DateTime]("updated_at")
 
-  def * = (id.?, trade_date, settlement_date, security_id, quantity, price, user_id, order_id, matched_order_id, state, created_at.?, updated_at.?) <> (Trade.tupled, Trade.unapply)
+  def * = (id.?, trade_date, settlement_date, security_id, quantity, price, buy_sell, user_id, order_id, matched_order_id, state, created_at.?, updated_at.?) <> (Trade.tupled, Trade.unapply)
 }
 
 /**
@@ -56,7 +57,7 @@ class TradeTable(tag: Tag) extends Table[Trade](tag, "trades") {
  */
 object TradeJsonProtocol extends DefaultJsonProtocol {
   import com.lot.utils.CustomJson._
-  implicit val tradeFormat = jsonFormat12(Trade)
+  implicit val tradeFormat = jsonFormat13(Trade)
 }
 
 /**
