@@ -81,16 +81,26 @@ object OrderDao extends TableQuery(new OrderTable(_)) with LazyLogging {
     val allOrders = for {
       o <- this if (o.unfilled_qty > 0.0 && o.security_id === security_id && o.buy_sell === OrderType.BUY)
     } yield (o)
-    // TODO - cannot sort by created_at, fix that  
-    db.run(allOrders.sortBy(x => (x.price.desc, x.id.desc)).result)
+    /*
+     * Market order on top of limit
+     * Higher prices on top of lower
+     * Time priority after that
+     * TODO - cannot sort by created_at, fix that  
+     */
+    db.run(allOrders.sortBy(x => (x.order_type.desc, x.price.desc, x.id.asc)).result)
   }
 
   def unfilled_sells(security_id: Long) = {
     val allOrders = for {
       o <- this if (o.unfilled_qty > 0.0 && o.security_id === security_id && o.buy_sell === OrderType.SELL)
     } yield (o)
-    // TODO - cannot sort by created_at, fix that  
-    db.run(allOrders.sortBy(x => (x.price.asc, x.id.desc)).result)
+    /*
+     * Market order on top of limit
+     * Lower prices on top of lower
+     * Time priority after that
+     * TODO - cannot sort by created_at, fix that         
+     */
+    db.run(allOrders.sortBy(x => (x.order_type.desc, x.price.asc, x.id.asc)).result)
   }
 
   /**

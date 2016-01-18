@@ -43,4 +43,128 @@ class UnfilledOrderManagerTest extends BaseTest {
     assert(uom.sells.length == 1)
   }
 
+  "An UnfilledOrderManager" should "match the oldest market order sell to ensure time priority with an incoming buy" in {
+
+    /*
+     * Push some Orders into the DB
+     */
+
+    val security_id = 10
+    val o0 = OrderFactory.generate(security_id = 10, order_type = OrderType.LIMIT, buy_sell = OrderType.SELL, unfilled_qty = 10)
+    val o1 = OrderFactory.generate(security_id = 10, order_type = OrderType.MARKET, buy_sell = OrderType.SELL, unfilled_qty = 10)
+    val o2 = OrderFactory.generate(security_id = 10, order_type = OrderType.MARKET, buy_sell = OrderType.SELL, unfilled_qty = 10)
+    val o3 = OrderFactory.generate(security_id = 10, order_type = OrderType.MARKET, buy_sell = OrderType.SELL, unfilled_qty = 10)
+
+    val fo0 = wait(OrderDao.save(o0))
+    val fo1 = wait(OrderDao.save(o1))
+    val fo2 = wait(OrderDao.save(o2))
+    val fo3 = wait(OrderDao.save(o3))
+
+    /*
+     * Start the UOM
+     */
+    val uom = UnfilledOrderManager(security_id)
+    
+
+    val o4 = OrderFactory.generate(security_id = 10, order_type = OrderType.MARKET, buy_sell = OrderType.BUY, unfilled_qty = 10)
+    val matchedOrder = uom.findMatch(o4)
+    /*
+     * Ensure UOM matches the oldest order
+     */
+    assert(matchedOrder.get.id == fo1.id)
+  }
+ 
+   "An UnfilledOrderManager" should "match the lowest priced sell limit order to ensure price priority with an incoming buy" in {
+
+    /*
+     * Push some Orders into the DB
+     */
+
+    val security_id = 10
+    val o0 = OrderFactory.generate(security_id = 10, order_type = OrderType.LIMIT, buy_sell = OrderType.SELL, unfilled_qty = 10, price=104)
+    val o1 = OrderFactory.generate(security_id = 10, order_type = OrderType.LIMIT, buy_sell = OrderType.SELL, unfilled_qty = 10, price=103)
+    val o2 = OrderFactory.generate(security_id = 10, order_type = OrderType.LIMIT, buy_sell = OrderType.SELL, unfilled_qty = 10, price=102)
+    val o3 = OrderFactory.generate(security_id = 10, order_type = OrderType.LIMIT, buy_sell = OrderType.SELL, unfilled_qty = 10, price=101)
+
+    val fo0 = wait(OrderDao.save(o0))
+    val fo1 = wait(OrderDao.save(o1))
+    val fo2 = wait(OrderDao.save(o2))
+    val fo3 = wait(OrderDao.save(o3))
+
+    /*
+     * Start the UOM
+     */
+    val uom = UnfilledOrderManager(security_id)
+    
+
+    val o4 = OrderFactory.generate(security_id = 10, order_type = OrderType.MARKET, buy_sell = OrderType.BUY, unfilled_qty = 10)
+    val matchedOrder = uom.findMatch(o4)
+    /*
+     * Ensure UOM matches the oldest order
+     */
+    assert(matchedOrder.get.id == fo3.id)
+  }
+   
+  "An UnfilledOrderManager" should "match the oldest market order buy to ensure time priority with an incoming sell" in {
+
+    /*
+     * Push some Orders into the DB
+     */
+
+    val security_id = 10
+    val o0 = OrderFactory.generate(security_id = 10, order_type = OrderType.LIMIT, buy_sell = OrderType.BUY, unfilled_qty = 10)
+    val o1 = OrderFactory.generate(security_id = 10, order_type = OrderType.MARKET, buy_sell = OrderType.BUY, unfilled_qty = 10)
+    val o2 = OrderFactory.generate(security_id = 10, order_type = OrderType.MARKET, buy_sell = OrderType.BUY, unfilled_qty = 10)
+    val o3 = OrderFactory.generate(security_id = 10, order_type = OrderType.MARKET, buy_sell = OrderType.BUY, unfilled_qty = 10)
+
+    val fo0 = wait(OrderDao.save(o0))
+    val fo1 = wait(OrderDao.save(o1))
+    val fo2 = wait(OrderDao.save(o2))
+    val fo3 = wait(OrderDao.save(o3))
+
+    /*
+     * Start the UOM
+     */
+    val uom = UnfilledOrderManager(security_id)
+    
+
+    val o4 = OrderFactory.generate(security_id = 10, order_type = OrderType.MARKET, buy_sell = OrderType.SELL, unfilled_qty = 10)
+    val matchedOrder = uom.findMatch(o4)
+    /*
+     * Ensure UOM matches the oldest order
+     */
+    assert(matchedOrder.get.id == fo1.id)
+  }
+  
+   "An UnfilledOrderManager" should "match the highest priced buy limit order to ensure price priority with an incoming sell" in {
+
+    /*
+     * Push some Orders into the DB
+     */
+
+    val security_id = 10
+    val o0 = OrderFactory.generate(security_id = 10, order_type = OrderType.LIMIT, buy_sell = OrderType.BUY, unfilled_qty = 10, price = 100)
+    val o1 = OrderFactory.generate(security_id = 10, order_type = OrderType.LIMIT, buy_sell = OrderType.BUY, unfilled_qty = 10, price = 101)
+    val o2 = OrderFactory.generate(security_id = 10, order_type = OrderType.LIMIT, buy_sell = OrderType.BUY, unfilled_qty = 10, price = 102)
+    val o3 = OrderFactory.generate(security_id = 10, order_type = OrderType.LIMIT, buy_sell = OrderType.BUY, unfilled_qty = 10, price = 101)
+
+    val fo0 = wait(OrderDao.save(o0))
+    val fo1 = wait(OrderDao.save(o1))
+    val fo2 = wait(OrderDao.save(o2))
+    val fo3 = wait(OrderDao.save(o3))
+
+    /*
+     * Start the UOM
+     */
+    val uom = UnfilledOrderManager(security_id)
+    
+
+    val o4 = OrderFactory.generate(security_id = 10, order_type = OrderType.MARKET, buy_sell = OrderType.SELL, unfilled_qty = 10)
+    val matchedOrder = uom.findMatch(o4)
+    /*
+     * Ensure UOM matches the oldest order
+     */
+    assert(matchedOrder.get.id == fo2.id)
+  }
+
 }

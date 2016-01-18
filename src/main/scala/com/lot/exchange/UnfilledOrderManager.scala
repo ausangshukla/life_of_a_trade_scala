@@ -12,9 +12,16 @@ import com.typesafe.scalalogging.LazyLogging
 class UnfilledOrderManager(val security_id: Long,
                            val buys: ListBuffer[Order],
                            val sells: ListBuffer[Order]) extends LazyLogging {
-
-  def sortSells(left: Order, right: Order) = { left.price < right.price && left.id.get < right.id.get }
-  def sortBuys(left: Order, right: Order) = { left.price > right.price && left.id.get < right.id.get }
+  
+  /**
+   * Ensures sells are sorted by price and time with market orders on top of limit order. 
+   * Note id is used instead of time for performance
+   */
+  private def sortSells(left: Order, right: Order) = { left.order_type > right.order_type && left.price <= right.price && left.id.get < right.id.get }
+  /**
+   * Ensures buys are sorted by price and time. Note id is used instead of time for performance
+   */
+  private def sortBuys(left: Order, right: Order) = { left.order_type > right.order_type && left.price >= right.price && left.id.get < right.id.get }
   
   /*
    * Ensure the orders from the DB are sorted properly
@@ -22,6 +29,7 @@ class UnfilledOrderManager(val security_id: Long,
   buys.sortWith(sortBuys)
   sells.sortWith(sortSells)
   
+  logger.debug(s"buys = $buys sells = $sells")
   /**
    * Finds an order that matches the given order
    */
