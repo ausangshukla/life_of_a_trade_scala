@@ -37,6 +37,7 @@ class OrderMatcher(security_id: Long, unfilledOM: UnfilledOrderManager,
                    tradeGenerator: ActorRef, securityManager: ActorRef) extends Actor with ActorLogging {
 
   var current_price: Double = 0.0
+  
 
   override def preStart = {
     /*

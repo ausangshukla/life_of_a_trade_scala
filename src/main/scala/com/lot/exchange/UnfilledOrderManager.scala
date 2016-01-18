@@ -13,6 +13,15 @@ class UnfilledOrderManager(val security_id: Long,
                            val buys: ListBuffer[Order],
                            val sells: ListBuffer[Order]) extends LazyLogging {
 
+  def sortSells(left: Order, right: Order) = { left.price < right.price && left.id.get < right.id.get }
+  def sortBuys(left: Order, right: Order) = { left.price > right.price && left.id.get < right.id.get }
+  
+  /*
+   * Ensure the orders from the DB are sorted properly
+   */
+  buys.sortWith(sortBuys)
+  sells.sortWith(sortSells)
+  
   /**
    * Finds an order that matches the given order
    */
@@ -111,11 +120,11 @@ class UnfilledOrderManager(val security_id: Long,
       order match {
         case Order(id, _, OrderType.BUY, _, user_id, _, _, _, _, _, _) => {
           buys --= buys.filter(_.id == order.id)
-          buys.sortWith((left, right) => { left.price > right.price && left.id.get < right.id.get })
+          buys.sortWith(sortBuys)
         }
         case Order(id, _, OrderType.SELL, _, user_id, _, _, _, _, _, _) => {
           sells --= sells.filter(_.id == order.id)
-          sells.sortWith((left, right) => { left.price < right.price && left.id.get < right.id.get })
+          sells.sortWith(sortSells)
         }
       }
       true
@@ -138,11 +147,11 @@ class UnfilledOrderManager(val security_id: Long,
     order match {
       case Order(id, _, OrderType.BUY, _, user_id, _, _, _, _, _, _) => {
         buys += order
-        buys.sortWith((left, right) => { left.price > right.price && left.id.get < right.id.get })
+        buys.sortWith(sortBuys)
       }
       case Order(id, _, OrderType.SELL, _, user_id, _, _, _, _, _, _) => {
         sells += order
-        sells.sortWith((left, right) => { left.price < right.price && left.id.get < right.id.get })
+        sells.sortWith(sortSells)
       }
     }
 
