@@ -14,6 +14,7 @@ import com.lot.utils.CORSSupport
 import com.lot.security.service.SecurityService
 import akka.actor.ActorLogging
 import com.lot.trade.service.TradeService
+import com.lot.position.service.PositionService
 
 class RoutesActor(modules: Configuration) extends Actor with 
   HttpService with StaticService with CORSSupport with ActorLogging {
@@ -27,6 +28,7 @@ class RoutesActor(modules: Configuration) extends Actor with
       UserService.endpoints ~ 
       SecurityService.endpoints ~
       TradeService.endpoints ~ 
+      PositionService.endpoints ~
       staticRoute })
  
 }
