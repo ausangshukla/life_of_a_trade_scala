@@ -22,7 +22,11 @@ case class Trade(id: Option[Long],
                  user_id: Long, order_id: Long, matched_order_id: Long,
                  state: String,
                  created_at: Option[DateTime],
-                 updated_at: Option[DateTime])
+                 updated_at: Option[DateTime]) {
+  
+  def value = quantity * price
+  
+}
 
 /**
  * The allowed states for the trade to be in

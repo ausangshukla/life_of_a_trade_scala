@@ -35,6 +35,14 @@ object PositionDao extends TableQuery(new PositionTable(_)) {
   }
   
   /**
+   * Returns the Position 
+   * @security_id The id of the security for the Position in the DB
+   */
+  def get(security_id: Long, user_id: Long) = {
+    db.run(this.filter(p => p.security_id === security_id && p.user_id === user_id).result.headOption)
+  }
+  
+  /**
    * Updates the Position
    * @position The new fields will be updated in the DB
    */
