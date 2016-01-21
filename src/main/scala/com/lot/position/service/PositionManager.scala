@@ -38,36 +38,58 @@ class PositionManager extends Actor with ActorLogging {
 
   /**
    * Updates the position in the DB
-   * 
+   *
    * TODO: How to handle without Await ? Can this use case be solved without a blocking call?
-   * Note that  the positions for the same security have to be updated sequentially, 
+   * Note that  the positions for the same security have to be updated sequentially,
    * so future updates via slick will cause problems if there are multiple trades for the same security
-   * 
-   * @trade: The trade which is incoming and we need to create a position or update 
+   *
+   * @trade: The trade which is incoming and we need to create a position or update
    * an existing position for the security of the trade
-   * @typeOfTrade: New, Modify or Cancel
+   * @typeOfTrade: New or Cancel. Note Modify is a Cancel followed by a New
    */
   private def updatePosition(trade: Trade, typeOfTrade: String) = {
     val pos = Await.result(PositionDao.get(trade.security_id, trade.user_id), 5 seconds)
     pos match {
       case Some(position) => {
         /*
-         * Position already exists - compute the new value, average_price and pnl
+         * Position already exists - compute the new quantity, average_price and pnl
          */
-        
-        val totalQty = position.quantity + trade.quantity
-        val purchaseValue = position.value * trade.value
-        val average_price = purchaseValue / totalQty 
-        /*
-         * Use the trade price as the current price of the security to get the current market value
-         */
-        val pnl = totalQty * trade.price - purchaseValue
+        val (totalQty, average_price, pnl) = typeOfTrade match {
+          case "New" => {
+            val totalQty = position.quantity + trade.quantity
+            val purchaseValue = position.value + trade.value
+            val average_price = purchaseValue / totalQty
+            /*
+	  	       * Use the trade price as the current price of the security to get the current market value
+  	  	     */
+            val pnl = totalQty * trade.price - purchaseValue
+            /*
+             * Return the tuple
+             */
+            (totalQty, average_price, pnl)
+            
+          }
+          case "Cancel" => {
+            val totalQty = position.quantity - trade.quantity            
+            val purchaseValue = totalQty * position.average_price
+            val average_price = purchaseValue / totalQty
+            /*
+	  	       * Use the trade price as the current price of the security to get the current market value
+  	  	     */
+            val pnl = totalQty * trade.price - purchaseValue
+            /*
+             * Return the tuple
+             */
+            (totalQty, average_price, pnl)
+            
+          }
+        }
         /*
          * Update the DB
          */
-        val newPos = position.copy(quantity=totalQty, average_price=average_price, pnl = pnl)        
+        val newPos = position.copy(quantity = totalQty, average_price = average_price, pnl = pnl)
         PositionDao.update(newPos)
-        
+
       }
       case None => {
         /*
