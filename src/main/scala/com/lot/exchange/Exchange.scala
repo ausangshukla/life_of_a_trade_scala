@@ -20,6 +20,7 @@ import com.lot.order.dao.OrderDao
 import com.lot.trade.service.TradeGenerator
 import akka.routing.FromConfig
 import com.lot.trade.service.SecurityManager
+import com.lot.position.service.PositionManager
 
 class Exchange(name: String, tradeGenerator: ActorRef, securityManager: ActorRef) extends Actor with ActorLogging  {
 
@@ -89,12 +90,18 @@ object Exchange extends ConfigurationModuleImpl with LazyLogging {
   val NYSE = "NYSE"
   
   val system = ActorSystem("lot-om", config)
-  
+
+    
+  /*
+   * The actor that manages the positions based on the trades created
+   */
+  val positionManager = system.actorOf(FromConfig.props(Props[PositionManager]), "positionManagerRouter")
+
   /*
    * The actor that handles trade creation / enrichment for the exchange
    * NOTE: Actually used inside the OrderMatcher post matching to create trades
    */
-  val tradeGenerator = system.actorOf(FromConfig.props(Props[TradeGenerator]), "tradeGeneratorRouter")
+  val tradeGenerator = system.actorOf(FromConfig.props(Props(classOf[TradeGenerator], positionManager)), "tradeGeneratorRouter")
   
   /*
    * The actor that handles price update and broadcasting of prices

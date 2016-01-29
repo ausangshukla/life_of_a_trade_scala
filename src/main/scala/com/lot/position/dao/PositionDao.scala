@@ -14,6 +14,7 @@ import org.joda.time.DateTime
 
 object PositionDao extends TableQuery(new PositionTable(_)) {
 
+  import com.lot.utils.CustomDBColMappers._
   /**
    * Saves the Position to the DB
    * @return The Id of the saved entity
@@ -22,7 +23,12 @@ object PositionDao extends TableQuery(new PositionTable(_)) {
   val insertQuery = this returning this.map(_.id) into ((position, id) => position.copy(id = Some(id)))
   
   def save(position: Position) : Future[Position] = {
-    val action = insertQuery += position
+    /*
+     * Ensure the timestamps are updated
+     */
+    val now = new DateTime()
+    val o: Position = position.copy(created_at = Some(now), updated_at = Some(now))   
+    val action = insertQuery += o
     db.run(action)
   }
   
@@ -52,6 +58,19 @@ object PositionDao extends TableQuery(new PositionTable(_)) {
     val new_position: Position = position.copy(updated_at = Some(now))
     
     db.run(this.filter(_.id === position.id).update(new_position))
+  }
+  
+   /**
+   * Updates the Position
+   * @position The new fields will be updated in the DB but only if 
+   * the updated_at in the DB is the same as the one in the position param 
+   */
+  def updateWithOptimisticLocking(position: Position) = {
+    // update the updated_at timestamp
+    val now = new DateTime();
+    val new_position: Position = position.copy(updated_at = Some(now))
+    
+    db.run(this.filter(p=>p.id === position.id && p.updated_at === position.updated_at).update(new_position))
   }
   
   /**

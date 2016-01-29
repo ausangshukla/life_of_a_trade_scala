@@ -71,9 +71,10 @@ object TradeMessage {
   /*
    * These are the messages that the Exchange can receive
    */
-  case class New(trade: Trade)
-  case class Modify(trade: Trade)
-  case class Cancel(trade: Trade)
+  sealed trait TradeMessage
+  case class New(trade: Trade) extends TradeMessage
+  //case class Modify(trade: Trade) extends TradeMessage
+  case class Cancel(trade: Trade) extends TradeMessage
 
 }
 

@@ -7,8 +7,10 @@ import akka.actor.ActorLogging
 import com.lot.trade.dao.TradeDao
 import com.lot.trade.model.TradeMessage
 import com.lot.trade.model.TradeState
+import akka.actor.ActorRef
+import scala.concurrent.ExecutionContext.Implicits.global
 
-class TradeGenerator extends Actor with ActorLogging {
+class TradeGenerator(positionManager: ActorRef) extends Actor with ActorLogging {
 
   override def preStart = {
     
@@ -16,23 +18,25 @@ class TradeGenerator extends Actor with ActorLogging {
 
   def receive = {
     case TradeMessage.New(trade)    => { handleNewTrade(trade) }
-    case TradeMessage.Modify(trade) => { handleModifyTrade(trade) }
     case TradeMessage.Cancel(trade) => { handleCancelTrade(trade) }
     case msg                          => { log.error(s"Received unknown msg $msg")}
   }
 
   def handleNewTrade(trade: Trade) = {
     log.info(s"handleNewTrade: $trade")
-    TradeDao.save(trade)
+    TradeDao.save(trade).map { t =>
+      positionManager ! TradeMessage.New(t)
+    }
   }
   
-  def handleModifyTrade(trade: Trade) = {
-    log.info(s"handleModifyTrade: $trade")
-    TradeDao.update(trade)
-  }
   
   def handleCancelTrade(trade: Trade) = {
     log.info(s"handleCancelTrade: $trade")
-    TradeDao.update(trade.copy(state=TradeState.CANCELLED))
+    TradeDao.update(trade.copy(state=TradeState.CANCELLED)).map { rowCount =>
+      rowCount match {
+        case 1 => positionManager ! TradeMessage.Cancel(trade)
+        case 0 => log.error(s"Manual intervention required, Could not cancel trade $trade")
+      }
+    }
   }
 }

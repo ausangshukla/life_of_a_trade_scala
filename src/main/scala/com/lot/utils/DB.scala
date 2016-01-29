@@ -6,6 +6,9 @@ import com.lot.order.dao.OrderDao
 import com.lot.trade.dao.TradeDao
 import com.lot.security.dao.SecurityDao
 import com.lot.user.dao.UserDao
+import org.joda.time.DateTime
+import java.sql.Timestamp
+import slick.driver.MySQLDriver.api._
 
 object DB extends ConfigurationModuleImpl {
 
@@ -21,4 +24,13 @@ object DB extends ConfigurationModuleImpl {
     OrderDao.createTables()
     TradeDao.createTables()
   }
+}
+
+object CustomDBColMappers {
+
+  implicit def dateTimeMapper = MappedColumnType.base[DateTime, Timestamp] (
+    { dateTime => new Timestamp(dateTime.getMillis) },
+    { date => new DateTime(date) }
+  )
+
 }
