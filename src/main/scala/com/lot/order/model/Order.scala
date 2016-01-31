@@ -26,11 +26,20 @@ case class Order(id: Option[Long],
                  quantity: Double,
                  var unfilled_qty: Double,
                  price: Double,
-                 pre_trade_check_status: String, // InadequateCurrentBalance
-                 trade_status: String, // Filled, PartiallyFilled
+                 var pre_trade_check_status: String, // InadequateCurrentBalance
+                 var trade_status: String, // Filled, PartiallyFilled
+                 var status:String = "", //Active, Inactive, Cancelled 
                  created_at: Option[DateTime],
                  updated_at: Option[DateTime]) {
   
+  
+  def setUnfilledQty(q: Double) = {
+    unfilled_qty = q
+    unfilled_qty match {
+      case 0 => trade_status = "Filled"
+      case _ => trade_status = "Partially Filled"
+    }
+  }
   
 }
 
@@ -56,14 +65,15 @@ class OrderTable(tag: Tag) extends Table[Order](tag, "orders") {
   def price = column[Double]("price")
   def pre_trade_check_status = column[String]("pre_trade_check_status", O.Length(20,varying=true))
   def trade_status = column[String]("trade_status", O.Length(20,varying=true))
+  def status = column[String]("status", O.Length(20,varying=true))
   def created_at = column[DateTime]("created_at", O.Nullable)
   def updated_at = column[DateTime]("updated_at", O.Nullable)
-  def * = (id.?, exchange, buy_sell, order_type, user_id, security_id, quantity, unfilled_qty, price, pre_trade_check_status, trade_status, created_at.?, updated_at.?) <> (Order.tupled, Order.unapply)
+  def * = (id.?, exchange, buy_sell, order_type, user_id, security_id, quantity, unfilled_qty, price, pre_trade_check_status, trade_status, status, created_at.?, updated_at.?) <> (Order.tupled, Order.unapply)
 }
 
 
 
 object OrderJsonProtocol extends CustomJson {
-  implicit val orderFormat = jsonFormat13(Order)
+  implicit val orderFormat = jsonFormat14(Order)
 }
 

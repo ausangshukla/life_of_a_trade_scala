@@ -105,10 +105,11 @@ object OrderPreCheck extends ConfigurationModuleImpl {
 
   val userManager = system.actorOf(Props(classOf[UserManager]), "UserManager")
 
+  val orderPreCheckRouter = system.actorOf(Props(classOf[OrderPreCheck], securityManager, userManager), "orderPreCheckRouter")
   /**
    * Factory method
    */
   def apply() = {
-    system.actorOf(Props(classOf[OrderPreCheck], securityManager, userManager), "orderPreCheckRouter")
+    orderPreCheckRouter
   }
 }

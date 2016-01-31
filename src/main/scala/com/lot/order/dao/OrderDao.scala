@@ -15,11 +15,13 @@ import com.lot.order.model.OrderType
 
 object OrderDao extends TableQuery(new OrderTable(_)) with LazyLogging {
 
+  import com.lot.utils.CustomDBColMappers._
+  
   /**
    * This is used to return the id of the inserted object
    * http://stackoverflow.com/questions/31443505/slick-3-0-insert-and-then-get-auto-increment-value
    */
-  val insertQuery = this returning this.map(o=>o.id) into ((order, id) => order.copy(id = Some(id)))
+  val insertQuery = this returning this.map(o => o.id) into ((order, id) => order.copy(id = Some(id)))
 
   def save(order: Order): Future[Order] = {
     logger.debug(s"Saving $order")
@@ -27,7 +29,7 @@ object OrderDao extends TableQuery(new OrderTable(_)) with LazyLogging {
      * Ensure the timestamps are updated
      */
     val now = new DateTime()
-    val o: Order = order.copy(created_at = Some(now), updated_at = Some(now))   
+    val o: Order = order.copy(created_at = Some(now), updated_at = Some(now))
     val action = insertQuery += o
     db.run(action)
   }
@@ -44,6 +46,19 @@ object OrderDao extends TableQuery(new OrderTable(_)) with LazyLogging {
     val now = new DateTime()
     val o: Order = order.copy(updated_at = Some(now))
     db.run(this.filter(_.id === order.id).update(o))
+  }
+
+  def updateMatchStatus(order: Order, matchedOrder: Order): Future[Int] = {
+    logger.debug(s"Updating $order")
+    /*
+     * Ensure the updated_at is set
+     */
+    val now = new DateTime()
+    val query = for {
+        update1 <- this.filter{o1 =>  o1.id === order.id}.map{ x => (x.unfilled_qty, x.trade_status, x.updated_at) }.update((order.unfilled_qty, order.trade_status, now))        
+        update2 <- this.filter{o1 =>  o1.id === matchedOrder.id}.map{ x => (x.unfilled_qty, x.trade_status, x.updated_at) }.update((matchedOrder.unfilled_qty, matchedOrder.trade_status, now))
+    } yield(update1 + update2)
+    db.run(query.transactionally)
   }
 
   def delete(order: Order) = {
