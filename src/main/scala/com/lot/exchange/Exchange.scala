@@ -21,22 +21,30 @@ import com.lot.trade.service.TradeGenerator
 import akka.routing.FromConfig
 import com.lot.trade.service.SecurityManager
 import com.lot.position.service.PositionManager
+import akka.actor.Terminated
 
-class Exchange(name: String, tradeGenerator: ActorRef, securityManager: ActorRef) extends Actor with ActorLogging  {
+class Exchange(name: String, tradeGenerator: ActorRef, securityManager: ActorRef) extends Actor with ActorLogging {
 
   import com.lot.exchange.Message._
   implicit val timeout = Timeout(5.seconds)
 
-  var matchers = new HashMap[Long, ActorRef]
-  
+  var matchers = new HashMap[String, ActorRef]
+
   override def preStart = {
     tradeGenerator ! "Started"
   }
-  
+
   /**
    * This simply finds the appropriate matcher and forwards the message
    */
   def receive = {
+    case Terminated(deadMatcher)      => {
+      log.info(s"Matcher terminated: $deadMatcher")
+      /*
+       * Remove the OrderMatcher from the list of cached matchers
+       */
+      matchers -= deadMatcher.path.name
+    }
     case msg @ NewOrder(order, at)    => { getMatcher(order) ! msg }
     case msg @ ModifyOrder(order, at) => { getMatcher(order) ! msg }
     case msg @ CancelOrder(order, at) => { getMatcher(order) ! msg }
@@ -50,7 +58,7 @@ class Exchange(name: String, tradeGenerator: ActorRef, securityManager: ActorRef
    */
   private def getMatcher(order: Order) = {
     val security_id = order.security_id
-    val matcher = matchers.get(security_id)
+    val matcher = matchers.get(getOMName(security_id))
     matcher match {
       // We have a matcher for the give security_id - lets use that
       case Some(m) => m
@@ -58,22 +66,30 @@ class Exchange(name: String, tradeGenerator: ActorRef, securityManager: ActorRef
       case None => {
         log.info(s"Creating matcher OrderMatcher-$security_id")
         val m = buildMatcher(security_id)
-        matchers += (security_id -> m)
+        matchers += (m.path.name -> m)
+        /*
+         * We also watch the new matcher and remove it from the matchers hash when it dies
+         */
+        context.watch(m)
         m
       }
-    } 
+    }
   }
   
+  private def getOMName(security_id:Long) = {
+    s"OrderMatcher-$security_id"
+  }
+
   /**
    * Builds an OrderMatcher actor by passing it all the unfilled orders in the DB
    */
   private def buildMatcher(security_id: Long) = {
-    
+
     val unfilledOM = UnfilledOrderManager(security_id)
     /*
      * Create the OrderMatcher actor
      */
-    context.actorOf(Props(classOf[OrderMatcher], security_id, unfilledOM, tradeGenerator, securityManager), s"OrderMatcher-$security_id")        
+    context.actorOf(Props(classOf[OrderMatcher], security_id, unfilledOM, tradeGenerator, securityManager), getOMName(security_id))
   }
 
 }
@@ -82,16 +98,15 @@ class Exchange(name: String, tradeGenerator: ActorRef, securityManager: ActorRef
  * The place where we startup all exchanges
  */
 object Exchange extends ConfigurationModuleImpl with LazyLogging {
-  
+
   /*
    * Some constants
    */
   val NASDAQ = "NASDAQ"
   val NYSE = "NYSE"
-  
+
   val system = ActorSystem("lot-om", config)
 
-    
   /*
    * The actor that manages the positions based on the trades created
    */
@@ -102,33 +117,33 @@ object Exchange extends ConfigurationModuleImpl with LazyLogging {
    * NOTE: Actually used inside the OrderMatcher post matching to create trades
    */
   val tradeGenerator = system.actorOf(FromConfig.props(Props(classOf[TradeGenerator], positionManager)), "tradeGeneratorRouter")
-  
+
   /*
    * The actor that handles price update and broadcasting of prices
    */
   val securityManager = system.actorOf(FromConfig.props(Props[SecurityManager]), "securityManagerRouter")
-  
+
   /*
    * The map of all exchanges and their actorRefs
    */
   var exchanges = new HashMap[String, ActorRef]()
-  
+
   /*
    * Create all the exchanges specified in the config
    */
   val entries = config.getConfig("exchanges").entrySet().iterator()
-  while(entries.hasNext()) {
+  while (entries.hasNext()) {
     val kv = entries.next()
     val key = kv.getKey()
     /*
      * Pass in the exchange name and the tradeGenerator
      */
-    val e = system.actorOf(Props(classOf[Exchange], key, tradeGenerator, securityManager), name=key)
-    
+    val e = system.actorOf(Props(classOf[Exchange], key, tradeGenerator, securityManager), name = key)
+
     logger.info(s"Started exchange $key on " + e.path)
     exchanges += (key -> e)
   }
-  
+
 }
 /**
  * Message singleton

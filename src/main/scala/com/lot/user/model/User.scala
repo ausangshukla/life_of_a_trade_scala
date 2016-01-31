@@ -5,6 +5,8 @@ import spray.json.DeserializationException
 import java.sql.Timestamp
 import spray.json._
 import DefaultJsonProtocol._
+import com.lot.utils.CustomJson
+import org.joda.time.DateTime
 
 /**
  * Entity class storing rows of table Users
@@ -31,17 +33,15 @@ import DefaultJsonProtocol._
  *  @param teamId Database column team_id SqlType(INT), Default(None)
  *  @param contestId Database column contest_id SqlType(INT), Default(None)
  */
-case class User(id: Long, first_name: String, last_name: String, email: String,
-                created_at: java.sql.Timestamp, updated_at: java.sql.Timestamp,
+case class User(id: Option[Long], first_name: String, last_name: String, email: String,
+                created_at: Option[DateTime], updated_at: Option[DateTime],
                 encrypted_password: String = "",
-                role: String, team_id: Option[Int], contest_id: Option[Int], tokens: Option[String])
+                role: String, account_balance: Double, blocked_amount: Double, tokens: Option[String])
 
 /** Table description of table users. Objects of this class serve as prototypes for rows in queries. */
 class UserTable(_tableTag: Tag) extends Table[User](_tableTag, "users") {
-  def * = (id, first_name, last_name, email, created_at, updated_at, encrypted_password, role, team_id, contest_id, tokens) <> (User.tupled, User.unapply)
-  /** Maps whole row to an option. Useful for outer joins. */
-  def ? = (Rep.Some(id), first_name, last_name, email, created_at, updated_at, Rep.Some(encrypted_password), role, Rep.Some(team_id), Rep.Some(contest_id), Rep.Some(tokens)).shaped.<>({ r => import r._; _1.map(_ => User.tupled((_1.get, _2, _3, _4, _5, _6, _7.get, _8, _9.get, _10.get, _11.get))) }, (_: Any) => throw new Exception("Inserting into ? projection not supported."))
-
+  def * = (id.?, first_name, last_name, email, created_at.?, updated_at.?, encrypted_password, role, account_balance, blocked_amount, tokens) <> (User.tupled, User.unapply)
+ 
   /** Database column id SqlType(INT), AutoInc, PrimaryKey */
   val id: Rep[Long] = column[Long]("id", O.AutoInc, O.PrimaryKey)
   /** Database column first_name SqlType(VARCHAR), Length(255,true), Default(None) */
@@ -51,46 +51,23 @@ class UserTable(_tableTag: Tag) extends Table[User](_tableTag, "users") {
   /** Database column email SqlType(VARCHAR), Length(255,true), Default(None) */
   val email: Rep[String] = column[String]("email", O.Length(255, varying = true))
   /** Database column created_at SqlType(DATETIME), Default(None) */
-  val created_at: Rep[java.sql.Timestamp] = column[java.sql.Timestamp]("created_at")
+  val created_at = column[DateTime]("created_at")
   /** Database column updated_at SqlType(DATETIME), Default(None) */
-  val updated_at: Rep[java.sql.Timestamp] = column[java.sql.Timestamp]("updated_at")
+  val updated_at = column[DateTime]("updated_at")
   /** Database column encrypted_password SqlType(VARCHAR), Length(255,true), Default() */
   val encrypted_password: Rep[String] = column[String]("encrypted_password", O.Length(255, varying = true), O.Default(""))
   /** Database column role SqlType(VARCHAR), Length(255,true), Default(None) */
   val role: Rep[String] = column[String]("role", O.Length(255, varying = true))
   /** Database column team_id SqlType(INT), Default(None) */
-  val team_id: Rep[Option[Int]] = column[Option[Int]]("team_id")
+  val account_balance = column[Double]("account_balance")
   /** Database column contest_id SqlType(INT), Default(None) */
-  val contest_id: Rep[Option[Int]] = column[Option[Int]]("contest_id")
+  val blocked_amount = column[Double]("blocked_amount")
 
   val tokens: Rep[Option[String]] = column[Option[String]]("tokens", O.SqlType("TEXT"))
   val index1 = index("index_users_email", email, unique = true)
   
 }
 
-object UserImplicits {
-  // NOTE: GetResult mappers for plain SQL are only generated for tables where Slick knows how to map the types of all columns.
-  import slick.jdbc.{ GetResult => GR }
-
-  /** Collection-like TableQuery object for table Users */
-  lazy val Users = new TableQuery(tag => new UserTable(tag))
-  /** GetResult implicit for fetching User objects using plain SQL queries */
-  implicit def GetResultUser(implicit e0: GR[Int], e1: GR[Option[String]], e2: GR[Option[java.sql.Timestamp]], e3: GR[String], e4: GR[Option[Int]]): GR[User] = GR {
-    prs =>
-      import prs._
-      User.tupled((<<[Long], <<[String], <<[String], <<[String], <<[java.sql.Timestamp], <<[java.sql.Timestamp], <<[String], <<[String], <<?[Int], <<?[Int], <<?[String]))
-  }
-
-}
-
-object UserJsonProtocol extends DefaultJsonProtocol {
-
-  implicit object TimestampJsonFormat extends JsonFormat[Timestamp] {
-    def write(x: Timestamp) = JsNumber(x.getTime)
-    def read(value: JsValue) = value match {
-      case JsNumber(x) => new Timestamp(x.longValue)
-      case x           => deserializationError("Expected Timestamp as JsNumber, but got " + x)
-    }
-  }
+object UserJsonProtocol extends CustomJson {
   implicit val orderFormat = jsonFormat11(User)
 }

@@ -25,6 +25,7 @@ import com.lot.security.model.PriceMessage
 import scala.concurrent.duration._
 import akka.util.Timeout
 import scala.concurrent.Await
+import akka.actor.ReceiveTimeout
 
 /**
  * The matcher for a particular security
@@ -33,7 +34,7 @@ import scala.concurrent.Await
  * @buys : The list of buy orders sorted by price / time priority
  * @sells : The list of sell orders sorted by price / time priority
  */
-class OrderMatcher(security_id: Long, unfilledOM: UnfilledOrderManager,
+class OrderMatcher(val security_id: Long, unfilledOM: UnfilledOrderManager,
                    tradeGenerator: ActorRef, securityManager: ActorRef) extends Actor with ActorLogging {
 
   var current_price: Double = 0.0
@@ -53,15 +54,30 @@ class OrderMatcher(security_id: Long, unfilledOM: UnfilledOrderManager,
      */
     val value = Await.result(futurePrice, 5 seconds).asInstanceOf[PriceMessage.Value]
     current_price = value.price.price
+    
+    /*
+     * Ensure this actor times out and does not hog resources
+     */
+    context.setReceiveTimeout(600 seconds)
   }
 
   def receive = {
     case NewOrder(order, at)    => { handleNewOrder(order) }
-    case ModifyOrder(order, at) => { handleNewOrder(order) }
-    case CancelOrder(order, at) => { handleNewOrder(order) }
-    case _                      => {}
+    case CancelOrder(order, at) => { handleCancelOrder(order) }
+    case ReceiveTimeout => {
+      // To turn it off
+      log.warning(s"Stopping $self due to timeout")
+      context.setReceiveTimeout(Duration.Undefined)
+      context.stop(self)
+    }
   }
 
+  /**
+   * TODO
+   */
+  def handleCancelOrder(order: Order): Unit = {
+    
+  }
   /**
    * @order : The new order to be handled
    * @tailrec

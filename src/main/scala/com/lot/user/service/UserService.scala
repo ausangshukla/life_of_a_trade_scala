@@ -5,29 +5,45 @@ import com.lot.user.dao.UserDao
 import com.lot.user.model.User
 import com.lot.user.model.UserJsonProtocol
 import scala.concurrent.ExecutionContext.Implicits.global
-import com.lot.utils.CORSSupport
-import com.lot.user.model.User
 
-object UserService extends BaseService with CORSSupport {
-
-  import com.lot.user.model.UserJsonProtocol._
+/**
+ * The service that provides the REST interface for User 
+ */
+object UserService extends BaseService {
+  
+  /**
+   * For JSON serialization/deserialization
+   */
   import com.lot.Json4sProtocol._
 
+  /**
+   * The DAO for DB access to User
+   */
   val dao = UserDao
-  
+
+  /**
+   * Returns the list of users
+   */
   val list = getJson {
     path("users") {
       complete(dao.list)
     }
-
   }
 
+  /**
+   * Returns a specific user identified by the id
+   */
   val details = getJson {
     path("users" / IntNumber) { id =>
-          complete(dao.get(id))              
+      {
+        complete(dao.get(id))
+      }
     }
   }
 
+  /**
+   * Creates a new user
+   */
   val create = postJson {
     path("users") {
       entity(as[User]) { user =>
@@ -37,6 +53,10 @@ object UserService extends BaseService with CORSSupport {
       }
     }
   }
+  
+  /**
+   * Updates an existing user identified by the id
+   */
   val update = putJson {
     path("users" / IntNumber) { id =>
       entity(as[User]) { user =>
@@ -46,6 +66,10 @@ object UserService extends BaseService with CORSSupport {
       }
     }
   }
+  
+  /**
+   * Deletes the user identified by the id
+   */
   val destroy = deleteJson {
     path("users" / IntNumber) { id =>
 
@@ -54,11 +78,10 @@ object UserService extends BaseService with CORSSupport {
     }
   }
 
-  val endpoints = 
-    auth { 
-      current_user => {
-          println("current_user = " + current_user)
-          list ~ details ~ create ~ update ~ destroy
-      }
-    }
+  /**
+   * The list of methods which are exposed as the endpoint for this service
+   */
+  val endpoints =
+    list ~ details ~ create ~ update ~ destroy
+
 }
