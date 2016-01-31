@@ -28,16 +28,16 @@ class UserManager() extends Actor with ActorLogging {
   def receive = {
 
     case msg @ BlockAmount(user_id, amount) => {
-      getUserActor(user_id) ! msg
+      getUserActor(user_id) forward msg
     }
     case msg @ UnBlockAmount(user_id, amount) => {
-      getUserActor(user_id) ! msg
+      getUserActor(user_id) forward msg
     }
     case msg @ AddAccountBalance(user_id, amount) => {
-      getUserActor(user_id) ! msg
+      getUserActor(user_id) forward msg
     }
     case msg @ DeductBlockedAmount(user_id, amount) => {
-      getUserActor(user_id) ! msg
+      getUserActor(user_id) forward msg
     }
     case Terminated(deadUserActor) => {
       log.info(s"UserActor terminated: $deadUserActor")
@@ -114,4 +114,5 @@ object UserManager {
    * Deduct the amount specified from the blocked amount
    */
   case class DeductBlockedAmount(user_id: Long, amount: Double) extends Message
+
 }

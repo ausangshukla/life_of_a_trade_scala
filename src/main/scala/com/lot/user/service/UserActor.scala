@@ -19,6 +19,7 @@ import scala.collection.immutable.HashMap
 import akka.actor.Props
 import com.lot.user.service.UserManager._
 import akka.actor.ReceiveTimeout
+import com.lot.utils.GenericMessages._
 
 /**
  * Used to manage the updates to the user account_balance and blocked_amount
@@ -35,19 +36,35 @@ class UserActor(val user_id: Long) extends Actor with ActorLogging {
   def receive = {
     case msg @ BlockAmount(user_id, amount) => {
       log.debug(s"$msg")
-      Await.result( UserDao.addBlockedAmount(user_id, amount), 5 seconds)
+      val update = Await.result( UserDao.addBlockedAmount(user_id, amount), 5 seconds)
+      update match {
+        case 1 => sender ! Success
+        case 0 => sender ! Failure
+      }
     }
     case msg @ UnBlockAmount(user_id, amount) => {
       log.debug(s"$msg")
-      Await.result( UserDao.addBlockedAmount(user_id, amount * -1), 5 seconds)
+      val update = Await.result( UserDao.addBlockedAmount(user_id, amount * -1), 5 seconds)
+      update match {
+        case 1 => sender ! Success
+        case 0 => sender ! Failure
+      }
     }
     case msg @ AddAccountBalance(user_id, amount) => {
       log.debug(s"$msg")
-      Await.result( UserDao.addAccountBalance(user_id, amount), 5 seconds)
+      val update = Await.result( UserDao.addAccountBalance(user_id, amount), 5 seconds)
+      update match {
+        case 1 => sender ! Success
+        case 0 => sender ! Failure
+      }
     }
     case msg @ DeductBlockedAmount(user_id, amount) => {
       log.debug(s"$msg")
-      Await.result( UserDao.deductBlockedAmount(user_id, amount), 5 seconds)
+      val update = Await.result( UserDao.deductBlockedAmount(user_id, amount), 5 seconds)
+      update match {
+        case 1 => sender ! Success
+        case 0 => sender ! Failure
+      }
     }
     case ReceiveTimeout => {
       // To turn it off

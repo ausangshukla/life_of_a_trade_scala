@@ -23,6 +23,6 @@ object Boot extends App {
 
   um ! BlockAmount(26, 100)
   um ! UnBlockAmount(26, 100)
-  //um ! AddAccountBalance(29, 1000)
-  //um ! DeductBlockedAmount(26, 100)
+  um ! AddAccountBalance(26, 1000)
+  um ! DeductBlockedAmount(26, 100)
 }

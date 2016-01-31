@@ -14,10 +14,14 @@ object OrderFactory {
           security_id: Long, 
           quantity: Double = choose(1, 10).sample.get * 1000.0, 
           unfilled_qty: Double = 0.0, 
-          price: Double = choose(1, 10).sample.get * 100.0) = {
+          price: Double = choose(1, 10).sample.get * 100.0,
+          preTradeCheckStatus: String = "",
+          tradeStatus: String = "") = {
 
     val aprice = if (order_type == OrderType.MARKET)  0.0  else price 
-    Order(None, exchange, buy_sell, order_type, user_id, security_id, quantity, unfilled_qty, aprice, None, None)
+    
+    Order(None, exchange, buy_sell, order_type, user_id, security_id, quantity, unfilled_qty, 
+          aprice, preTradeCheckStatus, tradeStatus, None, None)
   }
   
   

@@ -13,6 +13,13 @@ import com.lot.exchange.Message._
 import org.joda.time.DateTime
 import akka.util.Timeout
 import com.lot.exchange.Exchange
+import akka.actor.ActorSystem
+import com.lot.utils.ConfigurationModuleImpl
+import akka.actor.Props
+import com.lot.trade.service.SecurityManager
+import akka.routing.FromConfig
+import com.lot.user.service.UserManager
+import akka.actor.ActorRef
 
 
 object OrderService extends BaseService {
@@ -20,7 +27,7 @@ object OrderService extends BaseService {
   import com.lot.Json4sProtocol._
   
   val dao = OrderDao
-  
+
   val list = getJson {
     path("orders") {
       complete(dao.list)
@@ -30,7 +37,7 @@ object OrderService extends BaseService {
 
   val details = getJson {
     path("orders" / IntNumber) { id =>
-          complete(dao.get(id))              
+      complete(dao.get(id))
     }
   }
 
@@ -38,6 +45,7 @@ object OrderService extends BaseService {
     path("orders") {
       entity(as[Order]) { order =>
         {
+          logger.debug(s"1. Saving order $order")
           complete({
             /*
              * Ensure the unfilled_qty is set to the quantity
@@ -46,31 +54,31 @@ object OrderService extends BaseService {
             /*
              * Save to the DB
              */
+            logger.debug(s"2. Saving order $order")
             val savedOrder = dao.save(order)
-            /*
-             * Send it to the exchange for execution
-             */
-            Exchange.exchanges.get(order.exchange).map { exchange =>
-              savedOrder.map(exchange ! NewOrder(_, new DateTime()))
+            
+            val preCheck: ActorRef = OrderPreCheck()
+            savedOrder.map{ order =>
+              logger.debug(s"Precheck order $order")            
+              preCheck ! NewOrder(order, new DateTime())
             }
             /*
              * Return the saved but yet unmatched order
              */
             savedOrder
-           })
+          })
         }
       }
     }
   }
-  
-  
+
   val update = putJson {
     path("orders" / IntNumber) { id =>
       entity(as[Order]) { order =>
         {
           complete({
             dao.update(order)
-            Exchange.exchanges.get(order.exchange).map { exchange => 
+            Exchange.exchanges.get(order.exchange).map { exchange =>
               exchange ! ModifyOrder(order, new DateTime())
             }
             order
@@ -79,7 +87,7 @@ object OrderService extends BaseService {
       }
     }
   }
-  
+
   val destroy = deleteJson {
     path("orders" / IntNumber) { id =>
 
@@ -88,11 +96,12 @@ object OrderService extends BaseService {
     }
   }
 
-  val endpoints = 
-    auth { 
-      current_user => {
+  val endpoints =
+    auth {
+      current_user =>
+        {
           logger.info("current_user = " + current_user.email)
           list ~ details ~ create ~ update ~ destroy
-      }
+        }
     }
 }
