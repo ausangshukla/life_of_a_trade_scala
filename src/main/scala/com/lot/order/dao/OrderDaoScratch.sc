@@ -13,7 +13,10 @@ import com.lot.position.dao.PositionDao
 
 object OrderDaoScratch {
 
-  Await.result(PositionDao.createTables(), 5 seconds)
+  //Await.result(PositionDao.createTables(), 5 seconds)
+
+  //Await.result(TradeDao.createTables(), 5 seconds)
+  val o2 = Await.result(OrderDao.get(1), 5 seconds)
                                                   //> SLF4J: Class path contains multiple SLF4J bindings.
                                                   //| SLF4J: Found binding in [jar:file:/home/thimmaiah/tools/activator-dist-1.3.5
                                                   //| /repository/ch.qos.logback/logback-classic/1.1.3/jars/logback-classic.jar!/o
@@ -26,50 +29,11 @@ object OrderDaoScratch {
                                                   //| SLF4J: Actual binding is of type [ch.qos.logback.classic.util.ContextSelecto
                                                   //| rStaticBinder]
                                                   //| loading application.dev.conf
-                                                  //| 01/21 09:15:21 DEBUG[main] s.b.D.action - #1: [fused] andThen
-                                                  //|       1: schema.create [create table `positions` (`id` BIGINT NOT NULL AUTO_
-                                                  //| INCREMENT PRIMARY KEY,`ticker` TEXT NOT NULL,`security_id` BIGINT NOT NULL,`
-                                                  //| quantity` DOUBLE NOT NULL,`average_price` DOUBLE NOT NULL,`pnl` DOUBLE NOT N
-                                                  //| ULL,`created_
-                                                  //| Output exceeds cutoff limit.
-
-  Await.result(TradeDao.createTables(), 5 seconds)//> 01/21 09:15:22 DEBUG[main] s.b.D.action - #1: [fused] andThen
-                                                  //|       1: schema.create [create table `trades` (`id` BIGINT NOT NULL AUTO_INC
-                                                  //| REMENT PRIMARY KEY,`trade_date` TIMESTAMP NOT NULL,`settlement_date` TIMESTA
-                                                  //| MP NOT NULL,`security_id` BIGINT NOT NULL,`quantity` DOUBLE NOT NULL,`price`
-                                                  //|  DOUBLE NOT NULL,`buy_sell` TEXT NOT NULL,`user_id` BIGINT NOT NULL,`order_i
-                                                  //| d` BIGINT NOT NULL,`matched_order_id` BIGINT NOT NULL,`state` TEXT NOT NULL,
-                                                  //| `created_at` TIMESTAMP NOT NULL,`updated_at` TIMESTAMP NOT NULL)]
-                                                  //|       2: success ()
-                                                  //| com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException: Table 'trades' al
-                                                  //| ready exists
-                                                  //| 	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
-                                                  //| 
-                                                  //| 	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstruct
-                                                  //| orAccessorImpl.java:57)
-                                                  //| 	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingC
-                                                  //| onstructorAccessorImpl.java:45)
-                                                  //| 	at java.lang.reflect.Construc
-                                                  //| Output exceeds cutoff limit.
-  val orders = OrderDao.list
-
-  val s = Await.result(orders, Duration.Inf)
-  val l = new ListBuffer[Order]
-  l ++= s
-  println(l)
-
-  val o = l.headOption
-  o match {
-    case Some(order) => order.unfilled_qty = 777
-  }
-
-  println(l)
-  println(l(0).unfilled_qty)
-
-  val o1 = OrderFactory.generate(security_id = 11)
-
-  val saved = Await.result(OrderDao.save(o1), 5 seconds)
-  val o2 = Await.result(OrderDao.get(saved.id.get), 5 seconds)
-  println(saved == o2.get)
-
+                                                  //| 01/31 22:10:31 DEBUG[main] s.b.D.action - #1: StreamingInvokerAction$HeadOpt
+                                                  //| ionAction [select x2.`id`, x2.`exchange`, x2.`buy_sell`, x2.`order_type`, x2
+                                                  //| .`user_id`, x2.`security_id`, x2.`quantity`, x2.`unfilled_qty`, x2.`price`, 
+                                                  //| x2.`pre_trade_check_status`, x2.`trade_status`, x2.`status`, x2.`created_at`
+  println(o2)                                     //> Some(Order(Some(1),NYSE,BUY,LIMIT,1,10,150.0,150.0,98.3,,,,Some(2016-01-31T2
+                                                  //| 1:51:50.000+05:30),Some(2016-01-31T21:51:50.000+05:30)))
+	println(o2.get.security)                  //> None
 }

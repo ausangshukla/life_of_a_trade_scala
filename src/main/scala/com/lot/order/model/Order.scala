@@ -14,6 +14,7 @@ import org.joda.time.format.ISODateTimeFormat
 import java.sql.Timestamp
 import com.lot.security.model.SecurityTable
 import com.lot.utils.CustomJson
+import com.lot.security.model.Security
 
 
 
@@ -26,13 +27,12 @@ case class Order(id: Option[Long],
                  quantity: Double,
                  var unfilled_qty: Double,
                  price: Double,
-                 var pre_trade_check_status: String, // InadequateCurrentBalance
-                 var trade_status: String, // Filled, PartiallyFilled
+                 var pre_trade_check_status: String = "", // InadequateCurrentBalance
+                 var trade_status: String = "", // Filled, PartiallyFilled
                  var status:String = "", //Active, Inactive, Cancelled 
                  created_at: Option[DateTime],
                  updated_at: Option[DateTime]) {
-  
-  
+    
   def setUnfilledQty(q: Double) = {
     unfilled_qty = q
     unfilled_qty match {
@@ -43,6 +43,7 @@ case class Order(id: Option[Long],
   
 }
 
+case class OrderSec(order: Order, sec: Security)
 
 object OrderType {
   val BUY = "BUY"
@@ -69,11 +70,16 @@ class OrderTable(tag: Tag) extends Table[Order](tag, "orders") {
   def created_at = column[DateTime]("created_at", O.Nullable)
   def updated_at = column[DateTime]("updated_at", O.Nullable)
   def * = (id.?, exchange, buy_sell, order_type, user_id, security_id, quantity, unfilled_qty, price, pre_trade_check_status, trade_status, status, created_at.?, updated_at.?) <> (Order.tupled, Order.unapply)
+  
+  def security = foreignKey("SEC_FK", security_id, TableQuery[SecurityTable])(_.id, onUpdate=ForeignKeyAction.Restrict)
+  
 }
 
 
 
 object OrderJsonProtocol extends CustomJson {
   implicit val orderFormat = jsonFormat14(Order)
+  implicit val secFormat = jsonFormat12(Security)
+  implicit val ordersecFormat = jsonFormat2(OrderSec)
 }
 

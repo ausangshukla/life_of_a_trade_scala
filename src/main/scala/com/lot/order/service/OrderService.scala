@@ -20,17 +20,28 @@ import com.lot.trade.service.SecurityManager
 import akka.routing.FromConfig
 import com.lot.user.service.UserManager
 import akka.actor.ActorRef
-
+import com.lot.order.model.Order
+import com.lot.security.model.Security
+import com.lot.order.model.OrderSec
 
 object OrderService extends BaseService {
 
   import com.lot.Json4sProtocol._
-  
+
   val dao = OrderDao
 
   val list = getJson {
     path("orders") {
-      complete(dao.list)
+
+      complete {
+        dao.list.map { seq =>
+          seq.map { os =>
+            {
+              OrderSec(os._1, os._2)
+            }
+          }
+        }
+      }
     }
 
   }
@@ -56,10 +67,10 @@ object OrderService extends BaseService {
              */
             logger.debug(s"2. Saving order $order")
             val savedOrder = dao.save(order)
-            
+
             val preCheck: ActorRef = OrderPreCheck()
-            savedOrder.map{ order =>
-              logger.debug(s"Precheck order $order")            
+            savedOrder.map { order =>
+              logger.debug(s"Precheck order $order")
               preCheck ! NewOrder(order, new DateTime())
             }
             /*

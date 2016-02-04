@@ -12,11 +12,13 @@ import com.lot.utils.DB._
 import scala.concurrent.ExecutionContext.Implicits.global
 import org.joda.time.DateTime
 import com.lot.order.model.OrderType
+import com.lot.security.model.SecurityTable
+import com.lot.security.model.Security
 
 object OrderDao extends TableQuery(new OrderTable(_)) with LazyLogging {
 
   import com.lot.utils.CustomDBColMappers._
-  
+
   /**
    * This is used to return the id of the inserted object
    * http://stackoverflow.com/questions/31443505/slick-3-0-insert-and-then-get-auto-increment-value
@@ -47,6 +49,16 @@ object OrderDao extends TableQuery(new OrderTable(_)) with LazyLogging {
     val o: Order = order.copy(updated_at = Some(now))
     db.run(this.filter(_.id === order.id).update(o))
   }
+  
+  def updatePreTradeStatus(order: Order): Future[Int] = {
+    logger.debug(s"Updating $order")
+    /*
+     * Ensure the updated_at is set
+     */
+    val now = new DateTime()
+    val o: Order = order.copy(updated_at = Some(now))
+    db.run(this.filter(_.id === o.id.get).map{dbo=>(dbo.pre_trade_check_status, dbo.updated_at)}.update((o.pre_trade_check_status, o.updated_at.get)))
+  }
 
   def updateMatchStatus(order: Order, matchedOrder: Order): Future[Int] = {
     logger.debug(s"Updating $order")
@@ -55,9 +67,9 @@ object OrderDao extends TableQuery(new OrderTable(_)) with LazyLogging {
      */
     val now = new DateTime()
     val query = for {
-        update1 <- this.filter{o1 =>  o1.id === order.id}.map{ x => (x.unfilled_qty, x.trade_status, x.updated_at) }.update((order.unfilled_qty, order.trade_status, now))        
-        update2 <- this.filter{o1 =>  o1.id === matchedOrder.id}.map{ x => (x.unfilled_qty, x.trade_status, x.updated_at) }.update((matchedOrder.unfilled_qty, matchedOrder.trade_status, now))
-    } yield(update1 + update2)
+      update1 <- this.filter { o1 => o1.id === order.id }.map { x => (x.unfilled_qty, x.trade_status, x.updated_at) }.update((order.unfilled_qty, order.trade_status, now))
+      update2 <- this.filter { o1 => o1.id === matchedOrder.id }.map { x => (x.unfilled_qty, x.trade_status, x.updated_at) }.update((matchedOrder.unfilled_qty, matchedOrder.trade_status, now))
+    } yield (update1 + update2)
     db.run(query.transactionally)
   }
 
@@ -75,11 +87,17 @@ object OrderDao extends TableQuery(new OrderTable(_)) with LazyLogging {
     db.run(DBIO.seq(this.schema.create))
   }
 
-  def list = {
+  def list: Future[Seq[(Order, Security)]] = {
     val allOrders = for {
       o <- this
-    } yield (o)
-    db.run(allOrders.sortBy(_.id.desc).result)
+      sec <- TableQuery[SecurityTable] if o.security_id === sec.id
+    } yield (o, sec)
+
+    val sorted = allOrders.sortBy {
+      case (order, security) => order.id.desc
+    }.result
+
+    db.run(sorted)
   }
 
   /**

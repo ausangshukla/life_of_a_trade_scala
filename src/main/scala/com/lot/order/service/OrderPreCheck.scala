@@ -72,7 +72,7 @@ class OrderPreCheck(securityManager: ActorRef, userManager: ActorRef) extends Ac
               exchange ! NewOrder(order, new DateTime())
             }
             
-            OrderDao.update(order.copy(pre_trade_check_status="BlockAmountSuccess")).map { count =>
+            OrderDao.updatePreTradeStatus(order.copy(pre_trade_check_status="BlockAmountSuccess")).map { count =>
               log.debug(s"Order updated $count")
             }
           }
@@ -80,7 +80,7 @@ class OrderPreCheck(securityManager: ActorRef, userManager: ActorRef) extends Ac
             /*
              * Mark order as BlockAmount failed
              */
-            OrderDao.update(order.copy(pre_trade_check_status="BlockAmountFailed")).map { count =>
+            OrderDao.updatePreTradeStatus(order.copy(pre_trade_check_status="BlockAmountFailed")).map { count =>
               log.debug(s"Order updated $count")
             }
           }
