@@ -41,6 +41,10 @@ object UserDao extends TableQuery(new UserTable(_)) {
   def get(id: Long) = {
     db.run(this.filter(_.id === id).result.headOption)
   }
+  
+  def getByRole(role: String) = {
+    db.run(this.filter(_.role === role).result)
+  }
 
   def findByEmail(email: String) = {
     db.run(this.filter(_.email === email).result.headOption)

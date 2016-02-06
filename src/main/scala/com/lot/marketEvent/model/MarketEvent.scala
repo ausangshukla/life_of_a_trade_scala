@@ -23,14 +23,30 @@ case class MarketEvent(id: Option[Long],
                        description: Option[String],
                        direction: String,
                        intensity: String,
-                       asset_class: String,
+                       asset_class: Option[String],
                        region: Option[String],
                        sector: Option[String],
                        ticker: Option[String],
                        external_url: Option[String],
                        created_at: Option[DateTime],
-                       updated_at: Option[DateTime])
+                       updated_at: Option[DateTime]) {
 
+  def priceMultiplier(price: Double, factor: Int = 1) = {
+
+    val pm = intensity match {
+      case MarketEventType.INTENSITY_HIGH => 5.0
+      case MarketEventType.INTENSITY_MED  => 3.0
+      case MarketEventType.INTENSITY_LOW  => 1.0
+    }
+
+    direction match {
+      case MarketEventType.DIRECTION_UP   => price * (1 + factor * pm / 100.0)
+      case MarketEventType.DIRECTION_DOWN => price * (1 - factor * pm / 100.0)
+    }
+
+  }
+
+}
 
 /**
  * The DB schema
@@ -54,21 +70,20 @@ class MarketEventTable(tag: Tag) extends Table[MarketEvent](tag, "market_events"
   def name = column[String]("name")
   def event_type = column[String]("event_type", O.Length(10, varying = true))
   def summary = column[String]("summary", O.Length(255, varying = true))
-  def description = column[String]("description")
+  def description = column[String]("description", O.Nullable)
   def direction = column[String]("direction", O.Length(5, varying = true))
   def intensity = column[String]("intensity", O.Length(10, varying = true))
-  def asset_class = column[String]("asset_class", O.Length(10, varying = true))
-  def region = column[String]("region", O.Length(10, varying = true))
-  def sector = column[String]("sector", O.Length(20, varying = true))
-  def ticker = column[String]("ticker", O.Length(5, varying = true))
-  def external_url = column[String]("external_url")
+  def asset_class = column[String]("asset_class", O.Length(10, varying = true), O.Nullable)
+  def region = column[String]("region", O.Length(10, varying = true), O.Nullable)
+  def sector = column[String]("sector", O.Length(20, varying = true), O.Nullable)
+  def ticker = column[String]("ticker", O.Length(5, varying = true), O.Nullable)
+  def external_url = column[String]("external_url", O.Nullable)
 
   /*
   * Projection betw the DB and the model
   */
-  def * = (id.?, name, event_type, summary, description.?, direction, intensity, asset_class, region.?, sector.?, ticker.?, external_url.?, created_at, updated_at) <> (MarketEvent.tupled, MarketEvent.unapply)
+  def * = (id.?, name, event_type, summary, description.?, direction, intensity, asset_class.?, region.?, sector.?, ticker.?, external_url.?, created_at, updated_at) <> (MarketEvent.tupled, MarketEvent.unapply)
 }
-
 
 /**
  * The JSON protocol

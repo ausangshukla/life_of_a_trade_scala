@@ -11,6 +11,8 @@ import com.lot.security.model.Security
 import com.lot.utils.DB._
 import scala.concurrent.ExecutionContext.Implicits.global
 import org.joda.time.DateTime
+import com.lot.marketEvent.model.MarketEvent
+import com.lot.marketEvent.model.MarketEvent
 
 object SecurityDao extends TableQuery(new SecurityTable(_)) {
 
@@ -83,6 +85,18 @@ object SecurityDao extends TableQuery(new SecurityTable(_)) {
   def list = {
     val allSecurities = for (o <- this) yield o
     db.run(allSecurities.result)
+  }
+  
+  def list(marketEvent: MarketEvent) = {
+    
+    val query =  marketEvent match {
+      case MarketEvent(id, name, event_type, summary, description, direction, intensity, None, None, None, Some(ticker), external_url, created_at, updated) => this.filter(_.ticker === ticker)
+      case MarketEvent(id, name, event_type, summary, description, direction, intensity, None, None, Some(sector), None, external_url, created_at, updated) => this.filter(_.sector === sector)
+      case MarketEvent(id, name, event_type, summary, description, direction, intensity, None, Some(region), None, None, external_url, created_at, updated) => this.filter(_.region === region)
+      case MarketEvent(id, name, event_type, summary, description, direction, intensity, Some(asset_class), None, None, None, external_url, created_at, updated) => this.filter(_.asset_class === asset_class)
+    }
+    
+    db.run(query.result)
   }
 
 }

@@ -46,7 +46,7 @@ object TriggeredEventDao extends TableQuery(new TriggeredEventTable(_)) {
         me <- TableQuery[MarketEventTable] if te.market_event_id === me.id
       } yield (te, me)
 
-    db.run(query.result)
+    db.run(query.result.headOption)
 
   }
 

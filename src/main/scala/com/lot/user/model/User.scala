@@ -71,3 +71,10 @@ class UserTable(_tableTag: Tag) extends Table[User](_tableTag, "users") {
 object UserJsonProtocol extends CustomJson {
   implicit val orderFormat = jsonFormat11(User)
 }
+
+object UserRoles {
+  val ADMIN = "Admin"
+  val TRADER = "Trader"
+  val OPS = "Ops"
+  val SIM = "Simulation"
+}

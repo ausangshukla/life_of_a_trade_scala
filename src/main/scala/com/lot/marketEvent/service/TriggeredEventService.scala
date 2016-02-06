@@ -5,12 +5,24 @@ import com.lot.marketEvent.dao.TriggeredEventDao
 import com.lot.marketEvent.model.TriggeredEvent
 import com.lot.marketEvent.model.TriggeredEventJsonProtocol
 import scala.concurrent.ExecutionContext.Implicits.global
+import akka.routing.FromConfig
+import akka.actor.Props
+import akka.actor.ActorSystem
+import com.lot.utils.ConfigurationModuleImpl
+import com.lot.marketEvent.dao.TriggeredEventDao
+import com.lot.marketEvent.model.MarketEvent
 
 /**
- * The service that provides the REST interface for TriggeredEvent 
+ * The service that provides the REST interface for TriggeredEvent
  */
-object TriggeredEventService extends BaseService {
-  
+object TriggeredEventService extends BaseService with ConfigurationModuleImpl {
+
+  val system = ActorSystem("lot-om", config)
+  /*
+   * The actor that manages the simulation of  trades based on the triggeredEvents
+   */
+  val simulator = system.actorOf(FromConfig.props(Props[Simulator]), "simulator")
+
   /**
    * For JSON serialization/deserialization
    */
@@ -25,7 +37,7 @@ object TriggeredEventService extends BaseService {
    * Returns the list of triggeredEvents
    */
   val list = getJson {
-    path("market_events") {
+    path("trigger_events") {
       complete(dao.list)
     }
   }
@@ -34,19 +46,29 @@ object TriggeredEventService extends BaseService {
    * Returns a specific triggeredEvent identified by the id
    */
   val details = getJson {
-    path("market_events" / IntNumber) { id =>
+    path("trigger_events" / IntNumber) { id =>
       {
         complete(dao.get(id))
       }
     }
   }
-  
-  
-  val trigger = getJson {
-    path("market_events/trigger" / IntNumber) { id =>
-      {
-        val event = dao.get(id)        
-        complete(event)
+
+  /**
+   * Triggers the Simulation of the event
+   */
+  val simulate = postJson {
+    path("trigger_events/simulate") {
+      entity(as[TriggeredEvent]) { triggeredEvent =>
+        {
+          dao.get(triggeredEvent.id.get).map { otm =>
+            otm match {
+              case Some((triggeredEvent: TriggeredEvent, marketEvent: MarketEvent)) =>
+                simulator ! marketEvent
+              case _ => logger.error(s"Could not trigger event $triggeredEvent")
+            }
+          }
+          complete(dao.update(triggeredEvent.copy(sent_to_sim = true)))
+        }
       }
     }
   }
@@ -55,7 +77,7 @@ object TriggeredEventService extends BaseService {
    * Creates a new triggeredEvent
    */
   val create = postJson {
-    path("market_events") {
+    path("trigger_events") {
       entity(as[TriggeredEvent]) { triggeredEvent =>
         {
           complete(dao.save(triggeredEvent))
@@ -63,12 +85,12 @@ object TriggeredEventService extends BaseService {
       }
     }
   }
-  
+
   /**
    * Updates an existing triggeredEvent identified by the id
    */
   val update = putJson {
-    path("market_events" / IntNumber) { id =>
+    path("trigger_events" / IntNumber) { id =>
       entity(as[TriggeredEvent]) { triggeredEvent =>
         {
           complete(dao.update(triggeredEvent))
@@ -76,12 +98,12 @@ object TriggeredEventService extends BaseService {
       }
     }
   }
-  
+
   /**
    * Deletes the triggeredEvent identified by the id
    */
   val destroy = deleteJson {
-    path("market_events" / IntNumber) { id =>
+    path("trigger_events" / IntNumber) { id =>
 
       complete(dao.delete(id))
 

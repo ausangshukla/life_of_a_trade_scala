@@ -41,15 +41,6 @@ object MarketEventService extends BaseService {
     }
   }
   
-  
-  val trigger = getJson {
-    path("market_events/trigger" / IntNumber) { id =>
-      {
-        val event = dao.get(id)        
-        complete(event)
-      }
-    }
-  }
 
   /**
    * Creates a new marketEvent
