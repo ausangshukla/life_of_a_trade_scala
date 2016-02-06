@@ -55,8 +55,8 @@ object MarketEventDao extends TableQuery(new MarketEventTable(_)) {
   }
   
    /**
-   * Updates the Position
-   * @position The new fields will be updated in the DB but only if 
+   * Updates the marketEvent
+   * marketEvent The new fields will be updated in the DB but only if 
    * the updated_at in the DB is the same as the one in the position param 
    */
   def updateWithOptimisticLocking( marketEvent:  MarketEvent) = {

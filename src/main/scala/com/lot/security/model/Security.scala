@@ -14,7 +14,9 @@ import org.joda.time.format.ISODateTimeFormat
 import com.lot.utils.CustomJson
 
 case class Security(id: Option[Long],
-    name: String,  ticker: String,  description: String,  price: Double,  asset_class: String,  sector: String,  region: String,  tick_size: Int,  liquidity: String, 
+    name: String,  ticker: String,  description: String,  
+    price: Double,  asset_class: String,  sector: String,  
+    region: String,  tick_size: Int,  liquidity: String, 
     created_at: Option[DateTime], 
     updated_at: Option[DateTime])
 
@@ -37,5 +39,11 @@ class SecurityTable(tag: Tag) extends Table[Security](tag, "securities") {
 
 object SecurityJsonProtocol extends CustomJson {
   implicit val securityFormat = jsonFormat12(Security)
+}
+
+object SecurityType {
+  val ASSET_CLASSES = List("BOND", "STOCK", "DERIVATIVE")
+  val SECTORS = List("Technology", "Pharma", "Auto", "Finance")
+  val REGIONS = List("US", "EU", "ASIA", "TK")
 }
 

@@ -1,15 +1,15 @@
 package com.lot.marketEvent.service
 
 import com.lot.BaseService
-import com.lot.marketEvent.dao.MarketEventDao
-import com.lot.marketEvent.model.MarketEvent
-import com.lot.marketEvent.model.MarketEventJsonProtocol
+import com.lot.marketEvent.dao.TriggeredEventDao
+import com.lot.marketEvent.model.TriggeredEvent
+import com.lot.marketEvent.model.TriggeredEventJsonProtocol
 import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
- * The service that provides the REST interface for MarketEvent 
+ * The service that provides the REST interface for TriggeredEvent 
  */
-object MarketEventService extends BaseService {
+object TriggeredEventService extends BaseService {
   
   /**
    * For JSON serialization/deserialization
@@ -17,12 +17,12 @@ object MarketEventService extends BaseService {
   import com.lot.Json4sProtocol._
 
   /**
-   * The DAO for DB access to MarketEvent
+   * The DAO for DB access to TriggeredEvent
    */
-  val dao = MarketEventDao
+  val dao = TriggeredEventDao
 
   /**
-   * Returns the list of marketEvents
+   * Returns the list of triggeredEvents
    */
   val list = getJson {
     path("market_events") {
@@ -31,7 +31,7 @@ object MarketEventService extends BaseService {
   }
 
   /**
-   * Returns a specific marketEvent identified by the id
+   * Returns a specific triggeredEvent identified by the id
    */
   val details = getJson {
     path("market_events" / IntNumber) { id =>
@@ -52,33 +52,33 @@ object MarketEventService extends BaseService {
   }
 
   /**
-   * Creates a new marketEvent
+   * Creates a new triggeredEvent
    */
   val create = postJson {
     path("market_events") {
-      entity(as[MarketEvent]) { marketEvent =>
+      entity(as[TriggeredEvent]) { triggeredEvent =>
         {
-          complete(dao.save(marketEvent))
+          complete(dao.save(triggeredEvent))
         }
       }
     }
   }
   
   /**
-   * Updates an existing marketEvent identified by the id
+   * Updates an existing triggeredEvent identified by the id
    */
   val update = putJson {
     path("market_events" / IntNumber) { id =>
-      entity(as[MarketEvent]) { marketEvent =>
+      entity(as[TriggeredEvent]) { triggeredEvent =>
         {
-          complete(dao.update(marketEvent))
+          complete(dao.update(triggeredEvent))
         }
       }
     }
   }
   
   /**
-   * Deletes the marketEvent identified by the id
+   * Deletes the triggeredEvent identified by the id
    */
   val destroy = deleteJson {
     path("market_events" / IntNumber) { id =>

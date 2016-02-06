@@ -14,8 +14,7 @@ import akka.actor.ActorLogging
 /**
  * The Actor which is used to run the routes associated with this service
  */
-class MarketEventRoutesActor(modules: Configuration) extends Actor with 
-  HttpService with StaticService with CORSSupport with ActorLogging {
+class MarketEventRoutesActor(modules: Configuration) extends Actor with HttpService with StaticService with CORSSupport with ActorLogging {
 
   import com.lot.marketEvent.model.MarketEventJsonProtocol._
 
@@ -27,7 +26,9 @@ class MarketEventRoutesActor(modules: Configuration) extends Actor with
    * Runs the routes in the service, defined by the MarketEventService.endpoints
    */
   def receive = runRoute(
-        respondWithCORS(conf.getString("origin.domain")) { MarketEventService.endpoints })
+    respondWithCORS(conf.getString("origin.domain")) {
+      MarketEventService.endpoints ~ TriggeredEventService.endpoints
+    })
 }
 
 

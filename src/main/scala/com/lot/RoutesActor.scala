@@ -16,6 +16,7 @@ import akka.actor.ActorLogging
 import com.lot.trade.service.TradeService
 import com.lot.position.service.PositionService
 import com.lot.marketEvent.service.MarketEventService
+import com.lot.marketEvent.service.TriggeredEventService
 
 class RoutesActor(modules: Configuration) extends Actor with 
   HttpService with StaticService with CORSSupport with ActorLogging {
@@ -31,6 +32,7 @@ class RoutesActor(modules: Configuration) extends Actor with
       TradeService.endpoints ~ 
       PositionService.endpoints ~
       MarketEventService.endpoints ~
+      TriggeredEventService.endpoints ~
       staticRoute })
  
 }

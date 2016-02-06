@@ -1,9 +1,11 @@
 package com.lot.generators
 
+import org.scalacheck.Gen.choose
+import org.scalacheck.Gen.oneOf
+
+import com.lot.exchange.Exchange
 import com.lot.order.model.Order
 import com.lot.order.model.OrderType
-import com.lot.exchange.Exchange
-import org.scalacheck.Gen._
 
 object OrderFactory {
   
@@ -25,5 +27,6 @@ object OrderFactory {
           aprice, preTradeCheckStatus, tradeStatus, status, None, None)
   }
   
-  
+   
 }
+

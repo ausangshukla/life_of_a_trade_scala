@@ -17,9 +17,20 @@ import com.lot.utils.CustomJson
  * The model class
  */
 case class MarketEvent(id: Option[Long],
-    name: String,  event_type: String,  summary: String,  description: String,  direction: String,  intensity: String,  asset_class: String,  region: String,  sector: String,  ticker: String,  external_url: String, 
-    created_at: Option[DateTime], 
-    updated_at: Option[DateTime])
+                       name: String,
+                       event_type: String,
+                       summary: String,
+                       description: Option[String],
+                       direction: String,
+                       intensity: String,
+                       asset_class: String,
+                       region: Option[String],
+                       sector: Option[String],
+                       ticker: Option[String],
+                       external_url: Option[String],
+                       created_at: Option[DateTime],
+                       updated_at: Option[DateTime])
+
 
 /**
  * The DB schema
@@ -40,23 +51,24 @@ class MarketEventTable(tag: Tag) extends Table[MarketEvent](tag, "market_events"
   /*
    * The rest of the domain specific fields
    */
-  def name = column[String]("name", O.Length(40,varying=true)) 
-  def event_type = column[String]("event_type", O.Length(10,varying=true)) 
-  def summary = column[String]("summary", O.Length(255,varying=true)) 
-  def description = column[String]("description", O.Nullable) 
-  def direction = column[String]("direction",O.Length(5,varying=true)) 
-  def intensity = column[String]("intensity",O.Length(5,varying=true)) 
-  def asset_class = column[String]("asset_class", O.Nullable, O.Length(10,varying=true)) 
-  def region = column[String]("region", O.Nullable, O.Length(10,varying=true)) 
-  def sector = column[String]("sector", O.Nullable, O.Length(20,varying=true)) 
-  def ticker = column[String]("ticker", O.Nullable, O.Length(5,varying=true)) 
-  def external_url = column[String]("external_url", O.Nullable) 
- 
- /*
+  def name = column[String]("name")
+  def event_type = column[String]("event_type", O.Length(10, varying = true))
+  def summary = column[String]("summary", O.Length(255, varying = true))
+  def description = column[String]("description")
+  def direction = column[String]("direction", O.Length(5, varying = true))
+  def intensity = column[String]("intensity", O.Length(10, varying = true))
+  def asset_class = column[String]("asset_class", O.Length(10, varying = true))
+  def region = column[String]("region", O.Length(10, varying = true))
+  def sector = column[String]("sector", O.Length(20, varying = true))
+  def ticker = column[String]("ticker", O.Length(5, varying = true))
+  def external_url = column[String]("external_url")
+
+  /*
   * Projection betw the DB and the model
   */
-  def * = (id.?,  name,  event_type,  summary,  description,  direction,  intensity,  asset_class,  region,  sector,  ticker,  external_url,  created_at, updated_at) <> (MarketEvent.tupled, MarketEvent.unapply)
+  def * = (id.?, name, event_type, summary, description.?, direction, intensity, asset_class, region.?, sector.?, ticker.?, external_url.?, created_at, updated_at) <> (MarketEvent.tupled, MarketEvent.unapply)
 }
+
 
 /**
  * The JSON protocol
@@ -65,3 +77,19 @@ object MarketEventJsonProtocol extends CustomJson {
   implicit val marketEventFormat = jsonFormat14(MarketEvent)
 }
 
+object MarketEventType {
+  val ASSET_CLASSES = List("Bond", "Stock", "Derivative")
+  val REGIONS = List("NA", "EMEA", "APAC")
+  val SECTORS = List("Tech", "Pharma", "Auto", "Finance", "Consumer")
+
+  val TYPE_MARKET = "Market"
+  val TYPE_NON_MARKET = "Non Market"
+
+  val DIRECTION_DOWN = "Down"
+  val DIRECTION_UP = "Up"
+
+  val INTENSITY_HIGH = "High"
+  val INTENSITY_MED = "Med"
+  val INTENSITY_LOW = "Low"
+
+}
