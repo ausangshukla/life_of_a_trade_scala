@@ -40,8 +40,8 @@ case class MarketEvent(id: Option[Long],
     }
 
     direction match {
-      case MarketEventType.DIRECTION_UP   => price * (1 + factor * pm / 100.0)
-      case MarketEventType.DIRECTION_DOWN => price * (1 - factor * pm / 100.0)
+      case MarketEventType.DIRECTION_UP   => Math.round(price * (1 + factor * pm / 100.0))
+      case MarketEventType.DIRECTION_DOWN => Math.round(price * (1 - factor * pm / 100.0))
     }
 
   }

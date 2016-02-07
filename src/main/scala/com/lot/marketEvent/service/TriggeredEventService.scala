@@ -18,13 +18,8 @@ import spray.routing.Directive.pimpApply
 /**
  * The service that provides the REST interface for TriggeredEvent
  */
-object TriggeredEventService extends BaseService with ConfigurationModuleImpl {
+object TriggeredEventService extends BaseService  {
 
-  val system = ActorSystem("lot-om", config)
-  /*
-   * The actor that manages the simulation of  trades based on the triggeredEvents
-   */
-  val simulator = system.actorOf(Props(classOf[Simulator]), name = "simulator")
 
   /**
    * For JSON serialization/deserialization
@@ -67,7 +62,7 @@ object TriggeredEventService extends BaseService with ConfigurationModuleImpl {
           dao.get(triggeredEvent.id.get).map { otm =>
             otm match {
               case Some((triggeredEvent: TriggeredEvent, marketEvent: MarketEvent)) =>
-                simulator ! marketEvent
+                Simulator() ! marketEvent
               case _ => logger.error(s"Could not trigger event $triggeredEvent")
             }
           }

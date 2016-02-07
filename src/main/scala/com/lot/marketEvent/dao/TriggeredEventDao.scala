@@ -119,7 +119,7 @@ object TriggeredEventDao extends TableQuery(new TriggeredEventTable(_)) {
    * Used only for testing to clean the DB after each test
    */
   def truncate = {
-    db.run(sqlu"TRUNCATE TABLE triggeredEvents;")
+    db.run(sqlu"TRUNCATE TABLE triggered_events;")
   }
 
 }

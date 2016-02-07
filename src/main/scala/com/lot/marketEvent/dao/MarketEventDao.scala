@@ -103,7 +103,7 @@ object MarketEventDao extends TableQuery(new MarketEventTable(_)) {
    * Used only for testing to clean the DB after each test
    */
   def truncate = {
-    db.run(sqlu"TRUNCATE TABLE marketEvents;")
+    db.run(sqlu"TRUNCATE TABLE market_events;")
   }
 
 }

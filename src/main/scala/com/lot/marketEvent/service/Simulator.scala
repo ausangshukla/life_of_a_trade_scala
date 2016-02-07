@@ -14,14 +14,22 @@ import com.lot.user.model.User
 import com.lot.order.model.Order
 import com.lot.exchange.Exchange
 import com.lot.order.model.OrderType
+import akka.actor.ActorSystem
+import com.lot.utils.ConfigurationModuleImpl
+import akka.actor.Props
+import com.lot.order.service.OrderPreCheck
+import com.lot.exchange.Message.NewOrder
+import org.joda.time.DateTime
+import com.lot.order.dao.OrderDao
 
 class Simulator extends Actor with ActorLogging {
 
   val TRADES_PER_SIM_USER = 10
 
   def receive = {
-    case msg @ MarketEvent => {
+    case msg @ MarketEvent(_, _, _, _, _, _, _, _, _, _, _, _, _, _) => {
       log.debug(s"Simulator received $msg")
+      simulate(msg)
     }
   }
 
@@ -77,9 +85,22 @@ class Simulator extends Actor with ActorLogging {
        */
       case MarketEvent(id, name, event_type, summary, description, MarketEventType.DIRECTION_UP, intensity, asset_class, region, sector, ticker, external_url, created_at, updated) => {
         for (i <- (1 to TRADES_PER_SIM_USER)) {
+          /*
+           * Get the price based on the event
+           */
           val price = marketEvent.priceMultiplier(security.price, i)
           val o = Order(None, Exchange.NASDAQ, OrderType.SELL, OrderType.LIMIT,
             user.id.get, security.id.get, 100, 100, price, "", "", "", None, None)
+
+          /*
+           * Save the order to the DB
+           */
+          OrderDao.save(o).map { order =>
+            /*
+           * Send the order to the exchange  
+           */
+            OrderPreCheck() ! NewOrder(order, new DateTime())
+          }
         }
       }
 
@@ -88,9 +109,22 @@ class Simulator extends Actor with ActorLogging {
        */
       case MarketEvent(id, name, event_type, summary, description, MarketEventType.DIRECTION_DOWN, intensity, asset_class, region, sector, ticker, external_url, created_at, updated) => {
         for (i <- (1 to TRADES_PER_SIM_USER)) {
+          /*
+           * Get the price based on the event
+           */
           val price = marketEvent.priceMultiplier(security.price, i)
           val o = Order(None, Exchange.NASDAQ, OrderType.BUY, OrderType.LIMIT,
             user.id.get, security.id.get, 100, 100, price, "", "", "", None, None)
+
+          /*
+           * Save the order to the DB
+           */
+          OrderDao.save(o).map { order =>
+            /*
+           * Send the order to the exchange  
+           */
+            OrderPreCheck() ! NewOrder(order, new DateTime())
+          }
         }
       }
     }
@@ -107,6 +141,16 @@ class Simulator extends Actor with ActorLogging {
         for (i <- (1 to TRADES_PER_SIM_USER)) {
           val o = Order(None, Exchange.NASDAQ, OrderType.BUY, OrderType.MARKET,
             user.id.get, security.id.get, 100, 100, 0, "", "", "", None, None)
+
+          /*
+           * Save the order to the DB
+           */
+          OrderDao.save(o).map { order =>
+            /*
+           * Send the order to the exchange  
+           */
+            OrderPreCheck() ! NewOrder(order, new DateTime())
+          }
         }
       }
 
@@ -117,10 +161,32 @@ class Simulator extends Actor with ActorLogging {
         for (i <- (1 to TRADES_PER_SIM_USER)) {
           val o = Order(None, Exchange.NASDAQ, OrderType.SELL, OrderType.MARKET,
             user.id.get, security.id.get, 100, 100, 0, "", "", "", None, None)
+
+          /*
+           * Save the order to the DB
+           */
+          OrderDao.save(o).map { order =>
+            /*
+           * Send the order to the exchange  
+           */
+            OrderPreCheck() ! NewOrder(order, new DateTime())
+          }
         }
       }
     }
 
   }
 
+}
+
+object Simulator extends ConfigurationModuleImpl {
+  val system = ActorSystem("lot-om", config)
+  /*
+   * The actor that manages the simulation of  trades based on the triggeredEvents
+   */
+  val simulator = system.actorOf(Props(classOf[Simulator]), name = "simulator")
+
+  def apply() = {
+    simulator
+  }
 }
