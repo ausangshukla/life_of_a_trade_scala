@@ -15,7 +15,7 @@ object MarketEventFactory {
                description: Option[String] = None,
                direction: String = oneOf(MarketEventType.DIRECTION_DOWN, MarketEventType.DIRECTION_UP).sample.get,
                intensity: String = oneOf(MarketEventType.INTENSITY_HIGH, MarketEventType.INTENSITY_LOW, MarketEventType.INTENSITY_MED).sample.get,
-               asset_class: String = oneOf(SecurityType.ASSET_CLASSES).sample.get,
+               asset_class: Option[String] = Some(oneOf(SecurityType.ASSET_CLASSES).sample.get),
                region: Option[String] = Some(oneOf(SecurityType.REGIONS).sample.get),
                sector: Option[String] = Some(oneOf(SecurityType.SECTORS).sample.get),
                ticker: Option[String] = None,
@@ -23,7 +23,9 @@ object MarketEventFactory {
                created_at: Option[DateTime] = None,
                updated_at: Option[DateTime] = None) = {
 
-    MarketEvent(id, name, event_type, summary, description, direction, intensity, asset_class, region, sector, ticker, external_url, created_at, updated_at)
+    MarketEvent(id, name, event_type, summary, description, direction,
+      intensity, asset_class, region, sector,
+      ticker, external_url, created_at, updated_at)
   }
 
 }

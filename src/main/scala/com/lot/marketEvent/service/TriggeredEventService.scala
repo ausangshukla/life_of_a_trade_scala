@@ -1,16 +1,19 @@
 package com.lot.marketEvent.service
 
-import com.lot.BaseService
-import com.lot.marketEvent.dao.TriggeredEventDao
-import com.lot.marketEvent.model.TriggeredEvent
-import com.lot.marketEvent.model.TriggeredEventJsonProtocol
 import scala.concurrent.ExecutionContext.Implicits.global
-import akka.routing.FromConfig
-import akka.actor.Props
-import akka.actor.ActorSystem
-import com.lot.utils.ConfigurationModuleImpl
+
+import com.lot.BaseService
+import com.lot.Json4sProtocol
 import com.lot.marketEvent.dao.TriggeredEventDao
 import com.lot.marketEvent.model.MarketEvent
+import com.lot.marketEvent.model.TriggeredEvent
+import com.lot.utils.ConfigurationModuleImpl
+
+import akka.actor.ActorSystem
+import akka.actor.Props
+import akka.actor.actorRef2Scala
+import spray.httpx.marshalling.ToResponseMarshallable.isMarshallable
+import spray.routing.Directive.pimpApply
 
 /**
  * The service that provides the REST interface for TriggeredEvent
@@ -21,7 +24,7 @@ object TriggeredEventService extends BaseService with ConfigurationModuleImpl {
   /*
    * The actor that manages the simulation of  trades based on the triggeredEvents
    */
-  val simulator = system.actorOf(FromConfig.props(Props[Simulator]), "simulator")
+  val simulator = system.actorOf(Props(classOf[Simulator]), name = "simulator")
 
   /**
    * For JSON serialization/deserialization
@@ -55,6 +58,7 @@ object TriggeredEventService extends BaseService with ConfigurationModuleImpl {
 
   /**
    * Triggers the Simulation of the event
+   * TODO - ensure only admins can do this action
    */
   val simulate = postJson {
     path("trigger_events/simulate") {

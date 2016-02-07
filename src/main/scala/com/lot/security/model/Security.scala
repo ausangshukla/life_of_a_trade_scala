@@ -42,8 +42,8 @@ object SecurityJsonProtocol extends CustomJson {
 }
 
 object SecurityType {
-  val ASSET_CLASSES = List("BOND", "STOCK", "DERIVATIVE")
-  val SECTORS = List("Technology", "Pharma", "Auto", "Finance")
-  val REGIONS = List("US", "EU", "ASIA", "TK")
+  val ASSET_CLASSES = List("Bond", "Stock", "Derivative")
+  val SECTORS = List("Tech", "Pharma", "Auto", "Finance")
+  val REGIONS = List("NA", "EMEA", "APAC")
 }
 
