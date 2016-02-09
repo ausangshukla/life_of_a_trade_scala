@@ -38,17 +38,27 @@ class Exchange(name: String, tradeGenerator: ActorRef, securityManager: ActorRef
    * This simply finds the appropriate matcher and forwards the message
    */
   def receive = {
-    case Terminated(deadMatcher)      => {
+    case Terminated(deadMatcher) => {
       log.info(s"Matcher terminated: $deadMatcher")
       /*
        * Remove the OrderMatcher from the list of cached matchers
        */
       matchers -= deadMatcher.path.name
     }
-    case msg @ NewOrder(order, at)    => { getMatcher(order) ! msg }
+    case msg @ NewOrder(order, at) => {
+      val matcher = getMatcher(order)
+      log.debug(s"Routing message to $matcher")
+      matcher ! msg
+    }
     case msg @ ModifyOrder(order, at) => { getMatcher(order) ! msg }
     case msg @ CancelOrder(order, at) => { getMatcher(order) ! msg }
-    case msg                          => { log.error(s"Exchange received invalid message $msg") }
+    case msg @ StopMatchers => {
+      for {
+        (path, matcher) <- matchers
+      } yield (context.stop(matcher))
+    }
+    case msg => { log.error(s"Exchange received invalid message $msg") }
+
   }
 
   /**
@@ -75,8 +85,8 @@ class Exchange(name: String, tradeGenerator: ActorRef, securityManager: ActorRef
       }
     }
   }
-  
-  private def getOMName(security_id:Long) = {
+
+  private def getOMName(security_id: Long) = {
     s"OrderMatcher-$security_id"
   }
 
@@ -155,5 +165,5 @@ object Message {
   case class NewOrder(order: Order, at: DateTime)
   case class ModifyOrder(order: Order, at: DateTime)
   case class CancelOrder(order: Order, at: DateTime)
-
+  case object StopMatchers
 }

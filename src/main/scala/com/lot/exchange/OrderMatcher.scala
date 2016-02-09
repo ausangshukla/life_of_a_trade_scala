@@ -40,7 +40,10 @@ class OrderMatcher(val security_id: Long, unfilledOM: UnfilledOrderManager,
 
   var current_price: Double = 0.0
 
+  var pre_start_last_processed_order_id = 0L
+  
   override def preStart = {
+    log.info("prestart: Started")
     /*
      * Load the price of the security from the securityManager
      */
@@ -71,9 +74,9 @@ class OrderMatcher(val security_id: Long, unfilledOM: UnfilledOrderManager,
     /**
      * The last Id processed during pre start
      */
-    val pre_start_last_processed_order_id = if (orders.length > 0) orders.last.id.get else 0L
+    pre_start_last_processed_order_id = if (orders.length > 0) orders.last.id.get else 0L
     
-    
+    log.info("prestart: Completed")
     
   }
 
@@ -89,6 +92,8 @@ class OrderMatcher(val security_id: Long, unfilledOM: UnfilledOrderManager,
        */
       if(order.id.get > pre_start_last_processed_order_id) {
         handleNewOrder(order)
+      } else {
+        log.debug(s"Order processed during prestart. skipping $order")
       }
     }
     case CancelOrder(order, at) => { handleCancelOrder(order) }
