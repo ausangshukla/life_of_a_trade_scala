@@ -85,7 +85,7 @@ class UOMMatchTest extends BaseTest with TableDrivenPropertyChecks {
 
   }
 
-  "An UnfilledOrderManager" should "adjust matched orders, and remove them when required" taggedAs (NewTest) in {
+  "An UnfilledOrderManager" should "adjust matched orders, and remove them when required"  in {
 
     forAll(oppositeTrades) { (buy_sell: String, order_type: String, quantity: Double, unfilled_qty: Double, price: Double,
       obuy_sell: String, oorder_type: String, oquantity: Double, ounfilled_qty: Double, oprice: Double,

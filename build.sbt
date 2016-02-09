@@ -34,7 +34,9 @@ libraryDependencies ++= {
     "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     "org.scalactic" %% "scalactic" % "2.2.6",
     "org.scalatest" %% "scalatest" % "2.2.6" % "test",
-    "org.scalacheck" %% "scalacheck" % "1.12.5" % "test"
+    "org.scalacheck" %% "scalacheck" % "1.12.5" % "test",
+    "net.logstash.logback" % "logstash-logback-encoder" % "4.6"
+    
   )
   
 

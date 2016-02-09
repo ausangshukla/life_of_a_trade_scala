@@ -5,6 +5,9 @@ import com.lot.order.model.Order
 import com.lot.order.model.OrderType
 import com.lot.order.dao.OrderDao
 import com.typesafe.scalalogging.LazyLogging
+import scala.concurrent.duration.Duration
+import scala.concurrent.Await
+
 
 /**
  * Manages all the unfilled orders for a given security
@@ -36,7 +39,14 @@ class UnfilledOrderManager(val security_id: Long,
   def findMatch(order: Order): Option[Order] = {
 
     checkOrder(order)
+    /*
+     * Sometimes the order gets loaded from the DB when the OM starts
+     * In which case the order should be dequeued before we proceed
+     */
+    dequeueOrder(order, true)
+    
     logger.debug(s"findMatch: $order buys: $buys sells: $sells")
+
     if (order.unfilled_qty > 0) {
       order match {
         case Order(id, _, OrderType.BUY, OrderType.MARKET, user_id, _, _, _, _, _, _, _, _, _) =>
@@ -114,26 +124,30 @@ class UnfilledOrderManager(val security_id: Long,
     /*
      * Save the state
      */
-    OrderDao.updateMatchStatus(order, matchedOrder)
-    println(s"buys = $buys \nsells=$sells")
+    Await.result(OrderDao.updateMatchStatus(order, matchedOrder), Duration.Inf)
+    logger.debug(s"buys = $buys \nsells=$sells")
   }
 
-  def dequeueOrder(order: Order) = {
+  def dequeueOrder(order: Order, force: Boolean = false) = {
     logger.info(s"De-queuing order $order")
 
     checkOrder(order)
-    if (order.unfilled_qty == 0) {
-      /*
+    if (order.unfilled_qty == 0 || force) {
+    /*
      * Dequeue order which matches the id and ensure they are sorted
      */
       order match {
         case Order(id, _, OrderType.BUY, _, user_id, _, _, _, _, _, _, _, _, _) => {
-          buys --= buys.filter(_.id == order.id)
+          val filtered = buys.filter(_.id == order.id)
+          buys --= filtered
           buys.sortWith(sortBuys)
+          logger.debug(s"filtered out $filtered")
         }
         case Order(id, _, OrderType.SELL, _, user_id, _, _, _, _, _, _, _, _, _) => {
-          sells --= sells.filter(_.id == order.id)
+          val filtered = sells.filter(_.id == order.id)
+          sells --= filtered
           sells.sortWith(sortSells)
+          logger.debug(s"filtered out $filtered")
         }
       }
       true
@@ -186,19 +200,11 @@ import scala.concurrent.duration._
 object UnfilledOrderManager {
 
   /**
-   * Creates an instance of the UnfilledOrderManager with buys and sells loaded from the DB
+   * Creates an instance of the UnfilledOrderManager with buys and sells lists
    */
   def apply(security_id: Long) = {
     val buys = new ListBuffer[Order]()
     val sells = new ListBuffer[Order]()
-
-    /*
-     * TODO - re-examine if there is a non blocking way of doing this!
-     * Load the unfilled orders from the DB. Note we need to block here, else the OrderMatcher 
-     * will not be in a state to match the incoming orders
-     */
-    buys ++= Await.result(OrderDao.unfilled_buys(security_id), 5 seconds)
-    sells ++= Await.result(OrderDao.unfilled_sells(security_id), 5 seconds)
 
     new UnfilledOrderManager(security_id, buys, sells)
   }

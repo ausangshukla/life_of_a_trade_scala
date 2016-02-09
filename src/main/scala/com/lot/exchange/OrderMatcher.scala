@@ -26,6 +26,7 @@ import scala.concurrent.duration._
 import akka.util.Timeout
 import scala.concurrent.Await
 import akka.actor.ReceiveTimeout
+import scala.annotation.tailrec
 
 /**
  * The matcher for a particular security
@@ -38,7 +39,6 @@ class OrderMatcher(val security_id: Long, unfilledOM: UnfilledOrderManager,
                    tradeGenerator: ActorRef, securityManager: ActorRef) extends Actor with ActorLogging {
 
   var current_price: Double = 0.0
-  
 
   override def preStart = {
     /*
@@ -59,10 +59,38 @@ class OrderMatcher(val security_id: Long, unfilledOM: UnfilledOrderManager,
      * Ensure this actor times out and does not hog resources
      */
     context.setReceiveTimeout(600 seconds)
+    
+    /*
+     * Now play all the unprocessed orders in the DB 
+     */
+    val orders = Await.result(OrderDao.getUnprocessedOrders(security_id), 5 seconds)
+    for {
+      order <- orders
+    } yield (handleNewOrder(order))
+
+    /**
+     * The last Id processed during pre start
+     */
+    val pre_start_last_processed_order_id = if (orders.length > 0) orders.last.id.get else 0L
+    
+    
+    
   }
 
   def receive = {
-    case NewOrder(order, at)    => { handleNewOrder(order) }
+    case NewOrder(order, at)    => {
+      /*
+       * We do this check because its possible this trade was picked up 
+       * during prestart and already processed.
+       * 1. In the OrderService the Order comes in from the web and is saved to DB
+       * 2. Then its forwarded here
+       * 3. This actor starts up and replays everying in the DB - includes old unprocessed orders
+       * 4. This may cause the current order to have already been replayed
+       */
+      if(order.id.get > pre_start_last_processed_order_id) {
+        handleNewOrder(order)
+      }
+    }
     case CancelOrder(order, at) => { handleCancelOrder(order) }
     case ReceiveTimeout => {
       // To turn it off
@@ -73,22 +101,22 @@ class OrderMatcher(val security_id: Long, unfilledOM: UnfilledOrderManager,
   }
 
   /**
-   * TODO
+   * Simply dequeue it - its already marked as inactive in the DB
    */
   def handleCancelOrder(order: Order): Unit = {
-    
+    unfilledOM.dequeueOrder(order, true)
   }
   /**
    * @order : The new order to be handled
-   * @tailrec
    */
-  def handleNewOrder(order: Order): Unit = {
+  @tailrec
+  private def handleNewOrder(order: Order): Unit = {
     log.info(s"Handling unfilled_qty  = ${order.unfilled_qty} for order $order")
 
     /*
      * Find a match
      */
-    val matchedOrder = unfilledOM.findMatch(order)
+    val matchedOrder: Option[Order] = unfilledOM.findMatch(order)
     matchedOrder match {
       case Some(mo) => {
         /*

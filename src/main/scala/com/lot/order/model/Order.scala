@@ -49,7 +49,8 @@ object OrderType {
   val BUY = "BUY"
   val SELL = "SELL"
   val LIMIT = "LIMIT"
-  val MARKET = "MARKET"  
+  val MARKET = "MARKET"
+  val CANCELLED = "CANCELLED"
 }
 
 

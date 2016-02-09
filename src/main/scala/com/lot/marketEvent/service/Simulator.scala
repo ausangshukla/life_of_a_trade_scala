@@ -24,7 +24,7 @@ import com.lot.order.dao.OrderDao
 
 class Simulator extends Actor with ActorLogging {
 
-  val TRADES_PER_SIM_USER = 10
+  val TRADES_PER_SIM_USER = 20
 
   def receive = {
     case msg @ MarketEvent(_, _, _, _, _, _, _, _, _, _, _, _, _, _) => {

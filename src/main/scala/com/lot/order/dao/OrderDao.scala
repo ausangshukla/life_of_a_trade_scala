@@ -82,6 +82,11 @@ object OrderDao extends TableQuery(new OrderTable(_)) with LazyLogging {
     logger.debug(s"Deleting $delete_id")
     db.run(this.filter(_.id === delete_id).delete)
   }
+  
+  def cancel(id: Long) = {
+    logger.debug(s"Cancelling $id")
+    db.run(this.filter(_.id === id).map(_.trade_status).update(OrderType.CANCELLED))
+  }
 
   def createTables(): Future[Unit] = {
     db.run(DBIO.seq(this.schema.create))
@@ -105,14 +110,24 @@ object OrderDao extends TableQuery(new OrderTable(_)) with LazyLogging {
    */
   def unfilled(security_id: Long, buy_sell: String) = {
     val allOrders = for {
-      o <- this if (o.unfilled_qty > 0.0 && o.security_id === security_id && o.buy_sell === buy_sell)
+      o <- this if (o.unfilled_qty > 0.0 && o.security_id === security_id && o.buy_sell === buy_sell && o.trade_status =!= OrderType.CANCELLED)
     } yield (o)
     db.run(allOrders.sortBy(_.price.desc).result)
+  }
+  
+  /**
+   * Returns the unfilled orders in the order they came in
+   */
+  def getUnprocessedOrders(security_id: Long) = {
+    val allOrders = for {
+      o <- this if (o.unfilled_qty > 0.0 && o.security_id === security_id && o.trade_status =!= OrderType.CANCELLED)
+    } yield (o)
+    db.run(allOrders.sortBy(_.id.asc).result)
   }
 
   def unfilled_buys(security_id: Long) = {
     val allOrders = for {
-      o <- this if (o.unfilled_qty > 0.0 && o.security_id === security_id && o.buy_sell === OrderType.BUY)
+      o <- this if (o.unfilled_qty > 0.0 && o.security_id === security_id && o.buy_sell === OrderType.BUY && o.trade_status =!= OrderType.CANCELLED)
     } yield (o)
     /*
      * Market order on top of limit
@@ -125,7 +140,7 @@ object OrderDao extends TableQuery(new OrderTable(_)) with LazyLogging {
 
   def unfilled_sells(security_id: Long) = {
     val allOrders = for {
-      o <- this if (o.unfilled_qty > 0.0 && o.security_id === security_id && o.buy_sell === OrderType.SELL)
+      o <- this if (o.unfilled_qty > 0.0 && o.security_id === security_id && o.buy_sell === OrderType.SELL && o.trade_status =!= OrderType.CANCELLED)
     } yield (o)
     /*
      * Market order on top of limit
