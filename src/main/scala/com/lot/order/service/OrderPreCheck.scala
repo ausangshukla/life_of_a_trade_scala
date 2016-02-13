@@ -15,7 +15,7 @@ import com.lot.security.model.Price
 import akka.pattern.ask
 import scala.concurrent.ExecutionContext.Implicits.global
 import com.lot.user.dao.UserDao
-import com.lot.user.service.UserManager.BlockAmount
+import com.lot.user.service.UserManagerMessages.BlockAmount
 import com.lot.utils.GenericMessages.Success
 import com.lot.utils.GenericMessages.Failure
 import com.lot.exchange.Exchange
@@ -60,7 +60,7 @@ class OrderPreCheck(securityManager: ActorRef, userManager: ActorRef) extends Ac
       val price = priceMsg.asInstanceOf[PriceMessage.Value].price
       val amount = price.price * order.quantity
 
-      val result = userManager ? BlockAmount(order.user_id, amount)
+      val result = userManager ? BlockAmount(order.user_id, order.id.get, amount)
       result.map { reply =>
         log.debug(s"UserManager responded with $reply")
         reply match {
@@ -101,9 +101,12 @@ object OrderPreCheck extends ConfigurationModuleImpl {
   /*
    * The actor that handles price update and broadcasting of prices
    */
-  val securityManager = system.actorOf(FromConfig.props(Props[SecurityManager]), "securityManagerRouter")
+  val securityManager = SecurityManager.securityManager
 
-  val userManager = system.actorOf(Props(classOf[UserManager]), "UserManager")
+  /*
+   * Actor that handles blocking of the amounts to be charged
+   */
+  val userManager = UserManager.userManager
 
   val orderPreCheckRouter = system.actorOf(Props(classOf[OrderPreCheck], securityManager, userManager), "orderPreCheckRouter")
   /**

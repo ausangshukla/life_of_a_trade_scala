@@ -21,8 +21,12 @@ case class Trade(id: Option[Long],
                  security_id: Long, quantity: Double, price: Double, buy_sell: String,
                  user_id: Long, order_id: Long, matched_order_id: Long,
                  state: String,
-                 created_at: Option[DateTime],
-                 updated_at: Option[DateTime]) {
+                 exchange:String,
+                 commissions: Double=0,
+                 taxes: Double=0,
+                 total_amount:Double=0,
+                 created_at: Option[DateTime]=None,
+                 updated_at: Option[DateTime]=None) {
   
   def value = quantity * price
   
@@ -51,17 +55,23 @@ class TradeTable(tag: Tag) extends Table[Trade](tag, "trades") {
   def order_id = column[Long]("order_id")
   def matched_order_id = column[Long]("matched_order_id")
   def state = column[String]("state")
+  def exchange = column[String]("exchange")  
+  def commissions = column[Double]("commissions")
+  def taxes = column[Double]("taxes")
+  def total_amount = column[Double]("total_amount")
   def created_at = column[DateTime]("created_at")
   def updated_at = column[DateTime]("updated_at")
 
-  def * = (id.?, trade_date, settlement_date, security_id, quantity, price, buy_sell, user_id, order_id, matched_order_id, state, created_at.?, updated_at.?) <> (Trade.tupled, Trade.unapply)
+  def * = (id.?, trade_date, settlement_date, security_id, quantity, price, buy_sell, 
+          user_id, order_id, matched_order_id, state, exchange, 
+          commissions, taxes, total_amount, created_at.?, updated_at.?) <> (Trade.tupled, Trade.unapply)
 }
 
 /**
  * To convert to and from JSON
  */
 object TradeJsonProtocol extends CustomJson {
-  implicit val tradeFormat = jsonFormat13(Trade)
+  implicit val tradeFormat = jsonFormat17(Trade)
 }
 
 /**

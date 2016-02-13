@@ -11,6 +11,10 @@ import com.lot.security.model.Price
 import com.lot.security.dao.SecurityDao
 import com.lot.security.model.PriceMessage
 import scala.concurrent.ExecutionContext.Implicits.global
+import com.lot.utils.ConfigurationModuleImpl
+import akka.actor.ActorSystem
+import akka.actor.Props
+import akka.routing.FromConfig
 
 class SecurityManager extends Actor with ActorLogging {
 
@@ -45,5 +49,13 @@ class SecurityManager extends Actor with ActorLogging {
       }
     }
   }
+
+}
+
+object SecurityManager extends ConfigurationModuleImpl {
+
+  val system = ActorSystem("lot-om", config)
+
+  val securityManager = system.actorOf(FromConfig.props(Props[SecurityManager]), "securityManagerRouter")
 
 }

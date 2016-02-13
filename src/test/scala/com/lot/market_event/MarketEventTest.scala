@@ -1,6 +1,6 @@
 package com.lot.market_event
 
-import com.lot.BaseTest
+import com.lot.test.BaseTest
 import com.lot.generators.MarketEventFactory
 import com.lot.marketEvent.model.MarketEventTable
 import com.lot.marketEvent.model.MarketEventType
@@ -11,9 +11,11 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.Await
 import com.lot.marketEvent.service.Simulator
 import com.lot.security.dao.SecurityDao
-import com.lot.NewTest
+import com.lot.test.NewTest
 import com.lot.exchange.Message.StopMatchers
 import com.lot.exchange.Exchange
+import com.lot.user.service.UserManager
+import com.lot.user.service.UserManagerMessages.StopUserActors
 
 class MarketEventTest extends BaseTest {
 
@@ -51,6 +53,8 @@ class MarketEventTest extends BaseTest {
     for {
       (name, exchange) <- Exchange.exchanges
     } yield (exchange ! StopMatchers)
+    
+    UserManager.userManager ! StopUserActors
   }
 
   "An TriggeredMarketEvent with direction DOWN " should " when triggered move the market down" in {
@@ -88,6 +92,7 @@ class MarketEventTest extends BaseTest {
       (name, exchange) <- Exchange.exchanges
     } yield (exchange ! StopMatchers)
 
+    UserManager.userManager ! StopUserActors
   }
 
 }

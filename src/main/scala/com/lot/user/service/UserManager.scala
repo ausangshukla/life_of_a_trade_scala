@@ -17,9 +17,12 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import com.lot.user.dao.UserDao
 import scala.collection.immutable.HashMap
 import akka.actor.Props
-import com.lot.user.service.UserManager._
+import com.lot.user.service.UserManagerMessages._
 import akka.actor.ReceiveTimeout
 import akka.actor.Terminated
+import akka.actor.ActorSystem
+import com.lot.utils.ConfigurationModuleImpl
+import com.lot.utils.ConfigurationModuleImpl
 
 class UserManager() extends Actor with ActorLogging {
 
@@ -27,16 +30,16 @@ class UserManager() extends Actor with ActorLogging {
 
   def receive = {
 
-    case msg @ BlockAmount(user_id, amount) => {
+    case msg @ BlockAmount(user_id, order_id, amount) => {
       getUserActor(user_id) forward msg
     }
-    case msg @ UnBlockAmount(user_id, amount) => {
+    case msg @ UnBlockAmount(user_id, order_id, amount) => {
       getUserActor(user_id) forward msg
     }
     case msg @ AddAccountBalance(user_id, amount) => {
       getUserActor(user_id) forward msg
     }
-    case msg @ DeductBlockedAmount(user_id, amount) => {
+    case msg @ DeductBlockedAmount(user_id, order_id, amount) => {
       getUserActor(user_id) forward msg
     }
     case Terminated(deadUserActor) => {
@@ -45,6 +48,11 @@ class UserManager() extends Actor with ActorLogging {
        * Remove the UserActor from the list of cached users
        */
       users -= deadUserActor.path.name
+    }
+    case StopUserActors => {
+      for {
+        (path, user) <- users
+      } yield (context.stop(user))
     }
   }
 
@@ -95,17 +103,16 @@ class UserManager() extends Actor with ActorLogging {
 
 }
 
-object UserManager {
-
+object UserManagerMessages {
   sealed trait Message
   /**
    * Block the amount requested for the user
    */
-  case class BlockAmount(user_id: Long, amount: Double) extends Message
+  case class BlockAmount(user_id: Long, order_id: Long, amount: Double) extends Message
   /**
    * Unblock the amount
    */
-  case class UnBlockAmount(user_id: Long, amount: Double) extends Message
+  case class UnBlockAmount(user_id: Long, order_id: Long, amount: Double) extends Message
   /**
    * Add to the amount of a user
    */
@@ -113,6 +120,17 @@ object UserManager {
   /**
    * Deduct the amount specified from the blocked amount
    */
-  case class DeductBlockedAmount(user_id: Long, amount: Double) extends Message
+  case class DeductBlockedAmount(user_id: Long, order_id: Long, amount: Double) extends Message
+  /**
+   * Stops all the running user actors
+   */
+  case object StopUserActors extends Message
+}
+
+object UserManager extends ConfigurationModuleImpl {
+
+  val system = ActorSystem("lot-om", config)
+
+  val userManager = system.actorOf(Props(classOf[UserManager]), "UserManager")
 
 }

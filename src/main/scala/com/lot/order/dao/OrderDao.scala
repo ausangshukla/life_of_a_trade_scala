@@ -50,6 +50,14 @@ object OrderDao extends TableQuery(new OrderTable(_)) with LazyLogging {
     db.run(this.filter(_.id === order.id).update(o))
   }
   
+  def updateWithOptimisticLocking(order: Order) = {
+    // update the updated_at timestamp
+    val now = new DateTime();
+    val new_order: Order = order.copy(updated_at = Some(now))
+
+    db.run(this.filter(p => p.id === order.id && p.updated_at === order.updated_at).update(new_order))
+  }
+  
   def updatePreTradeStatus(order: Order): Future[Int] = {
     logger.debug(s"Updating $order")
     /*
@@ -103,6 +111,11 @@ object OrderDao extends TableQuery(new OrderTable(_)) with LazyLogging {
     }.result
 
     db.run(sorted)
+  }
+  
+  def listOrders = {
+    val allOrders = for (o <- this) yield o
+    db.run(allOrders.sortBy(_.id).result)
   }
 
   /**

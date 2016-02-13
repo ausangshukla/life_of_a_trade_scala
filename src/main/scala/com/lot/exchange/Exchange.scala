@@ -22,6 +22,8 @@ import akka.routing.FromConfig
 import com.lot.trade.service.SecurityManager
 import com.lot.position.service.PositionManager
 import akka.actor.Terminated
+import com.typesafe.config.ConfigValue
+import com.typesafe.config.Config
 
 class Exchange(name: String, tradeGenerator: ActorRef, securityManager: ActorRef) extends Actor with ActorLogging {
 
@@ -122,6 +124,7 @@ object Exchange extends ConfigurationModuleImpl with LazyLogging {
    */
   val positionManager = system.actorOf(FromConfig.props(Props[PositionManager]), "positionManagerRouter")
 
+  
   /*
    * The actor that handles trade creation / enrichment for the exchange
    * NOTE: Actually used inside the OrderMatcher post matching to create trades
@@ -137,21 +140,23 @@ object Exchange extends ConfigurationModuleImpl with LazyLogging {
    * The map of all exchanges and their actorRefs
    */
   var exchanges = new HashMap[String, ActorRef]()
+  var exchangeProps = new HashMap[String, Config]()
 
   /*
    * Create all the exchanges specified in the config
    */
-  val entries = config.getConfig("exchanges").entrySet().iterator()
-  while (entries.hasNext()) {
-    val kv = entries.next()
-    val key = kv.getKey()
+  val exchangeConfig = config.getConfig("exchanges")
+  val venues = exchangeConfig.getStringList("venues").listIterator()
+  while (venues.hasNext()) {
+    val venue = venues.next()
     /*
      * Pass in the exchange name and the tradeGenerator
      */
-    val e = system.actorOf(Props(classOf[Exchange], key, tradeGenerator, securityManager), name = key)
+    val e = system.actorOf(Props(classOf[Exchange], venue, tradeGenerator, securityManager), name = venue)
 
-    logger.info(s"Started exchange $key on " + e.path)
-    exchanges += (key -> e)
+    logger.info(s"Started exchange $venue on " + e.path)
+    exchanges += (venue -> e)
+    exchangeProps += (venue -> exchangeConfig.getConfig(venue))
   }
 
 }

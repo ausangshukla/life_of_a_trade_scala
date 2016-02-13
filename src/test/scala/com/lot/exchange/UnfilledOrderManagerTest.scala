@@ -1,7 +1,7 @@
 package com.lot.exchange
 
 import org.scalatest._
-import com.lot.BaseTest
+import com.lot.test.BaseTest
 import scala.collection.mutable.Stack
 import com.lot.order.model.Order
 import com.lot.order.model.OrderType
@@ -11,8 +11,8 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import com.lot.generators.OrderFactory
 import scala.Option
-import com.lot.FailingTest
-import com.lot.NewTest
+import com.lot.test.FailingTest
+import com.lot.test.NewTest
 
 class UnfilledOrderManagerTest extends BaseTest {
 

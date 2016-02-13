@@ -36,12 +36,24 @@ import org.joda.time.DateTime
 case class User(id: Option[Long], first_name: String, last_name: String, email: String,
                 created_at: Option[DateTime], updated_at: Option[DateTime],
                 encrypted_password: String = "",
-                role: String, account_balance: Double, blocked_amount: Double, tokens: Option[String])
+                role: String, account_balance: Double, blocked_amount: Double, tokens: Option[String]) {
+
+  /**
+   * The logic to deduct from blocked_amount
+   */
+  def deductBlockedAmount(prev_blocked_amount: Double, actually_charged_amount: Double) = {
+    val delta = prev_blocked_amount - actually_charged_amount
+    var ba = blocked_amount - prev_blocked_amount 
+    var ab = account_balance + delta
+    this.copy(account_balance=ab, blocked_amount=ba)
+  }
+
+}
 
 /** Table description of table users. Objects of this class serve as prototypes for rows in queries. */
 class UserTable(_tableTag: Tag) extends Table[User](_tableTag, "users") {
   def * = (id.?, first_name, last_name, email, created_at.?, updated_at.?, encrypted_password, role, account_balance, blocked_amount, tokens) <> (User.tupled, User.unapply)
- 
+
   /** Database column id SqlType(INT), AutoInc, PrimaryKey */
   val id: Rep[Long] = column[Long]("id", O.AutoInc, O.PrimaryKey)
   /** Database column first_name SqlType(VARCHAR), Length(255,true), Default(None) */
@@ -65,7 +77,7 @@ class UserTable(_tableTag: Tag) extends Table[User](_tableTag, "users") {
 
   val tokens: Rep[Option[String]] = column[Option[String]]("tokens", O.SqlType("TEXT"))
   val index1 = index("index_users_email", email, unique = true)
-  
+
 }
 
 object UserJsonProtocol extends CustomJson {

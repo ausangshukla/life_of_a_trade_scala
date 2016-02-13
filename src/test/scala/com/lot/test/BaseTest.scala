@@ -1,4 +1,4 @@
-package com.lot
+package com.lot.test
 
 import org.scalatest._
 import com.lot.order.dao.OrderDao
@@ -12,6 +12,7 @@ import com.lot.trade.dao.TradeDao
 import com.lot.marketEvent.dao.MarketEventDao
 import com.lot.marketEvent.dao.TriggeredEventDao
 import com.lot.position.dao.PositionDao
+import com.lot.blockAmount.dao.BlockAmountDao
 
 object FailingTest extends Tag("FailingTest")
 object NewTest extends Tag("NewTest")
@@ -26,6 +27,7 @@ abstract class BaseTest extends FlatSpec with Matchers with OptionValues
     Await.result(TradeDao.truncate, Duration.Inf)
     Await.result(TriggeredEventDao.truncate, Duration.Inf)
     Await.result(PositionDao.truncate, Duration.Inf)
+    Await.result(BlockAmountDao.truncate, Duration.Inf)
   }
 
   def wait[T](t: Future[T]): T = {

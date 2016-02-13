@@ -11,7 +11,7 @@ import com.lot.utils.ConfigurationModuleImpl
 import com.lot.utils.InitData
 import com.lot.order.service.OrderRoutesActor
 import com.lot.RoutesActor
-import com.lot.user.service.UserManager._
+import com.lot.user.service.UserManagerMessages._
 
 object Boot extends App {
 
@@ -21,8 +21,4 @@ object Boot extends App {
   // create and start our service actor
   val um = modules.system.actorOf(Props(classOf[UserManager]), "UserManager")
 
-  um ! BlockAmount(26, 100)
-  um ! UnBlockAmount(26, 100)
-  um ! AddAccountBalance(26, 1000)
-  um ! DeductBlockedAmount(26, 100)
 }
