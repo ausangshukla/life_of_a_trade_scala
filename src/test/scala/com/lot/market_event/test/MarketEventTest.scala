@@ -1,8 +1,7 @@
-package com.lot.market_event
+package com.lot.market_event.test
 
 import com.lot.test.BaseTest
 import com.lot.generators.MarketEventFactory
-import com.lot.marketEvent.model.MarketEventTable
 import com.lot.marketEvent.model.MarketEventType
 import com.lot.marketEvent.dao.MarketEventDao
 import com.lot.marketEvent.dao.TriggeredEventDao
@@ -11,11 +10,11 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.Await
 import com.lot.marketEvent.service.Simulator
 import com.lot.security.dao.SecurityDao
-import com.lot.test.NewTest
 import com.lot.exchange.Message.StopMatchers
 import com.lot.exchange.Exchange
 import com.lot.user.service.UserManager
 import com.lot.user.service.UserManagerMessages.StopUserActors
+import akka.actor.actorRef2Scala
 
 class MarketEventTest extends BaseTest {
 
