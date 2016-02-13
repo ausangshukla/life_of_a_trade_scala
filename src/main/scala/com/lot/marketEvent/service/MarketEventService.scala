@@ -9,7 +9,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 /**
  * The service that provides the REST interface for MarketEvent 
  */
-object MarketEventService extends BaseService {
+trait MarketEventRestService extends BaseService {
+  
+  val REST_ENDPOINT = "market_events"
   
   /**
    * For JSON serialization/deserialization
@@ -25,7 +27,7 @@ object MarketEventService extends BaseService {
    * Returns the list of marketEvents
    */
   val list = getJson {
-    path("market_events") {
+    path(REST_ENDPOINT) {
       complete(dao.list)
     }
   }
@@ -34,7 +36,7 @@ object MarketEventService extends BaseService {
    * Returns a specific marketEvent identified by the id
    */
   val details = getJson {
-    path("market_events" / IntNumber) { id =>
+    path(REST_ENDPOINT / IntNumber) { id =>
       {
         complete(dao.get(id))
       }
@@ -46,7 +48,7 @@ object MarketEventService extends BaseService {
    * Creates a new marketEvent
    */
   val create = postJson {
-    path("market_events") {
+    path(REST_ENDPOINT) {
       entity(as[MarketEvent]) { marketEvent =>
         {
           complete(dao.save(marketEvent))
@@ -59,7 +61,7 @@ object MarketEventService extends BaseService {
    * Updates an existing marketEvent identified by the id
    */
   val update = putJson {
-    path("market_events" / IntNumber) { id =>
+    path(REST_ENDPOINT / IntNumber) { id =>
       entity(as[MarketEvent]) { marketEvent =>
         {
           complete(dao.update(marketEvent))
@@ -72,7 +74,7 @@ object MarketEventService extends BaseService {
    * Deletes the marketEvent identified by the id
    */
   val destroy = deleteJson {
-    path("market_events" / IntNumber) { id =>
+    path(REST_ENDPOINT / IntNumber) { id =>
 
       complete(dao.delete(id))
 
@@ -85,4 +87,9 @@ object MarketEventService extends BaseService {
   val endpoints =
     list ~ details ~ create ~ update ~ destroy
 
+}
+
+
+object MarketEventService extends MarketEventRestService {
+  
 }

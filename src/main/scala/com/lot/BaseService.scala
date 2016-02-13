@@ -21,7 +21,7 @@ import com.lot.TokenAuthenticator.TokenAuthenticator
 import com.typesafe.scalalogging.LazyLogging
 
 object Json4sProtocol extends Json4sSupport {
-  implicit def json4sFormats: Formats = DefaultFormats ++ org.json4s.ext.JodaTimeSerializers.all
+  implicit def json4sFormats: Formats = DefaultFormats.lossless ++ org.json4s.ext.JodaTimeSerializers.all
 }
 
 trait BaseService extends SimpleRoutingApp with CORSSupport with LazyLogging {
