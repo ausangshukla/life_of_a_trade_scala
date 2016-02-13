@@ -7,7 +7,7 @@ import com.lot.trade.model.TradeJsonProtocol
 import scala.concurrent.ExecutionContext.Implicits.global
 
 
-object TradeService extends BaseService {
+trait TradeRestService extends BaseService {
 
   import com.lot.Json4sProtocol._
 
@@ -56,4 +56,8 @@ object TradeService extends BaseService {
   val endpoints =
     list ~ details ~ create ~ update ~ destroy
 
+}
+
+object TradeService extends TradeRestService {
+  
 }

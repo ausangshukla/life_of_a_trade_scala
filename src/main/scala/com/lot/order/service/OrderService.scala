@@ -24,7 +24,7 @@ import com.lot.order.model.Order
 import com.lot.security.model.Security
 import com.lot.order.model.OrderSec
 
-object OrderService extends BaseService {
+trait OrderRestService extends BaseService {
 
   import com.lot.Json4sProtocol._
 
@@ -115,4 +115,8 @@ object OrderService extends BaseService {
           list ~ details ~ create ~ update ~ destroy
         }
     }
+}
+
+object OrderService extends OrderRestService {
+  
 }

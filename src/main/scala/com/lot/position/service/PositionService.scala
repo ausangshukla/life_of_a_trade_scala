@@ -7,7 +7,7 @@ import com.lot.position.model.PositionJsonProtocol
 import scala.concurrent.ExecutionContext.Implicits.global
 
 
-object PositionService extends BaseService {
+trait PositionRestService extends BaseService {
 
   import com.lot.Json4sProtocol._
 
@@ -56,4 +56,8 @@ object PositionService extends BaseService {
   val endpoints =
     list ~ details ~ create ~ update ~ destroy
 
+}
+
+object PositionService extends PositionRestService {
+  
 }

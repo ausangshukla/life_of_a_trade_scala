@@ -9,7 +9,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 /**
  * The service that provides the REST interface for BlockAmount 
  */
-object BlockAmountService extends BaseService {
+trait BlockAmountRestService extends BaseService {
   
   /**
    * For JSON serialization/deserialization
@@ -84,4 +84,8 @@ object BlockAmountService extends BaseService {
   val endpoints =
     list ~ details ~ create ~ update ~ destroy
 
+}
+
+object BlockAmountService extends BlockAmountRestService {
+  
 }

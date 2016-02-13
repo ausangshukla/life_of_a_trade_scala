@@ -7,7 +7,7 @@ import com.lot.security.model.SecurityJsonProtocol
 import scala.concurrent.ExecutionContext.Implicits.global
 
 
-object SecurityService extends BaseService {
+trait SecurityRestService extends BaseService {
 
   import com.lot.Json4sProtocol._
 
@@ -56,4 +56,8 @@ object SecurityService extends BaseService {
   val endpoints =
     list ~ details ~ create ~ update ~ destroy
 
+}
+
+object SecurityService extends SecurityRestService {
+  
 }
