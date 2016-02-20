@@ -14,6 +14,7 @@ object OrderFactory {
           order_type: String = oneOf(OrderType.MARKET, OrderType.LIMIT).sample.get, 
           user_id: Long = choose(1L, 50L).sample.get, 
           security_id: Long, 
+          ticker: String = "Tick",
           quantity: Double = choose(1, 10).sample.get * 1000.0, 
           unfilled_qty: Double = 0.0, 
           price: Double = choose(1, 10).sample.get * 100.0,
@@ -23,7 +24,7 @@ object OrderFactory {
 
     val aprice = if (order_type == OrderType.MARKET)  0.0  else price 
     
-    Order(None, exchange, buy_sell, order_type, user_id, security_id, quantity, unfilled_qty, 
+    Order(None, exchange, buy_sell, order_type, user_id, security_id, ticker, quantity, unfilled_qty, 
           aprice, preTradeCheckStatus, tradeStatus, status, None, None)
   }
   

@@ -40,7 +40,8 @@ trait OrderRestService extends BaseService {
         dao.list.map { seq =>
           seq.map { os =>
             {
-              OrderSec(os._1, os._2)
+              //OrderSec(os._1, os._2)
+              os._1
             }
           }
         }

@@ -24,6 +24,7 @@ case class Order(id: Option[Long],
                  order_type: String,
                  user_id: Long = 0,
                  security_id: Long,
+                 ticker: String,
                  quantity: Double,
                  var unfilled_qty: Double = 0,
                  price: Double = 0,
@@ -62,6 +63,7 @@ class OrderTable(tag: Tag) extends Table[Order](tag, "orders") {
   def order_type = column[String]("order_type", O.Length(10,varying=true))
   def user_id = column[Long]("user_id")
   def security_id = column[Long]("security_id")
+  def ticker = column[String]("ticker", O.Length(6,varying=true))
   def quantity = column[Double]("quantity")
   def unfilled_qty = column[Double]("unfilled_qty")
   def price = column[Double]("price")
@@ -70,7 +72,7 @@ class OrderTable(tag: Tag) extends Table[Order](tag, "orders") {
   def status = column[String]("status", O.Length(20,varying=true))
   def created_at = column[DateTime]("created_at", O.Nullable)
   def updated_at = column[DateTime]("updated_at", O.Nullable)
-  def * = (id.?, exchange, buy_sell, order_type, user_id, security_id, quantity, unfilled_qty, price, pre_trade_check_status, trade_status, status, created_at.?, updated_at.?) <> (Order.tupled, Order.unapply)
+  def * = (id.?, exchange, buy_sell, order_type, user_id, security_id, ticker, quantity, unfilled_qty, price, pre_trade_check_status, trade_status, status, created_at.?, updated_at.?) <> (Order.tupled, Order.unapply)
   
   def security = foreignKey("SEC_FK", security_id, TableQuery[SecurityTable])(_.id, onUpdate=ForeignKeyAction.Restrict)
   
@@ -79,7 +81,7 @@ class OrderTable(tag: Tag) extends Table[Order](tag, "orders") {
 
 
 object OrderJsonProtocol extends CustomJson {
-  implicit val orderFormat = jsonFormat14(Order)
+  implicit val orderFormat = jsonFormat15(Order)
   implicit val secFormat = jsonFormat12(Security)
   implicit val ordersecFormat = jsonFormat2(OrderSec)
 }

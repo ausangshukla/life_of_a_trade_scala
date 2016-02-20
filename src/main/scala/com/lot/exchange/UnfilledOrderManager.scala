@@ -49,23 +49,23 @@ class UnfilledOrderManager(val security_id: Long,
 
     if (order.unfilled_qty > 0) {
       order match {
-        case Order(id, _, OrderType.BUY, OrderType.MARKET, user_id, _, _, _, _, _, _, _, _, _) =>
+        case Order(id, _, OrderType.BUY, OrderType.MARKET, user_id, _, _, _, _, _, _, _, _, _, _) =>
           sells.headOption match {
             case Some(head) => sells.headOption
             case _          => None
           }
-        case Order(id, _, OrderType.SELL, OrderType.MARKET, user_id, _, _, _, _, _, _, _, _, _) =>
+        case Order(id, _, OrderType.SELL, OrderType.MARKET, user_id, _, _, _, _, _, _, _, _, _, _) =>
           buys.headOption match {
             case Some(head) => buys.headOption
             case _          => None
           }
-        case Order(id, _, OrderType.BUY, OrderType.LIMIT, user_id, _, _, _, _, _, _, _, _, _) =>
+        case Order(id, _, OrderType.BUY, OrderType.LIMIT, user_id, _, _, _, _, _, _, _, _, _, _) =>
           sells.headOption match {
             case Some(head) if head.order_type == OrderType.LIMIT && head.price <= order.price => sells.headOption
             case Some(head) if head.order_type == OrderType.MARKET => sells.headOption
             case _ => None
           }
-        case Order(id, _, OrderType.SELL, OrderType.LIMIT, user_id, _, _, _, _, _, _, _, _, _) =>
+        case Order(id, _, OrderType.SELL, OrderType.LIMIT, user_id, _, _, _, _, _, _, _, _, _, _) =>
           buys.headOption match {
             case Some(head) if head.order_type == OrderType.LIMIT && head.price >= order.price => buys.headOption
             case Some(head) if head.order_type == OrderType.MARKET => buys.headOption
@@ -137,13 +137,13 @@ class UnfilledOrderManager(val security_id: Long,
      * Dequeue order which matches the id and ensure they are sorted
      */
       order match {
-        case Order(id, _, OrderType.BUY, _, user_id, _, _, _, _, _, _, _, _, _) => {
+        case Order(id, _, OrderType.BUY, _, user_id, _, _, _, _, _, _, _, _, _, _) => {
           val filtered = buys.filter(_.id == order.id)
           buys --= filtered
           buys.sortWith(sortBuys)
           logger.debug(s"filtered out $filtered")
         }
-        case Order(id, _, OrderType.SELL, _, user_id, _, _, _, _, _, _, _, _, _) => {
+        case Order(id, _, OrderType.SELL, _, user_id, _, _, _, _, _, _, _, _, _, _) => {
           val filtered = sells.filter(_.id == order.id)
           sells --= filtered
           sells.sortWith(sortSells)
@@ -168,11 +168,11 @@ class UnfilledOrderManager(val security_id: Long,
      * Enqueue order and ensure they are sorted
      */
     order match {
-      case Order(id, _, OrderType.BUY, _, user_id, _, _, _, _, _, _, _, _, _) => {
+      case Order(id, _, OrderType.BUY, _, user_id, _, _, _, _, _, _, _, _, _, _) => {
         buys += order
         buys.sortWith(sortBuys)
       }
-      case Order(id, _, OrderType.SELL, _, user_id, _, _, _, _, _, _, _, _, _) => {
+      case Order(id, _, OrderType.SELL, _, user_id, _, _, _, _, _, _, _, _, _, _) => {
         sells += order
         sells.sortWith(sortSells)
       }

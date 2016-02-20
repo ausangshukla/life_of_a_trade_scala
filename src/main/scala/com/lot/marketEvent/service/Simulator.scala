@@ -79,6 +79,7 @@ class Simulator extends Actor with ActorLogging {
   }
 
   private def genrateLimitOrders(marketEvent: MarketEvent, security: Security, user: User) = {
+    log.debug(s"$marketEvent \n for $security \n and $user")
     marketEvent match {
       /*
        * Generate SELL limit orders when market is going up
@@ -90,7 +91,7 @@ class Simulator extends Actor with ActorLogging {
            */
           val price = marketEvent.priceMultiplier(security.price, i)
           val o = Order(None, Exchange.NASDAQ, OrderType.SELL, OrderType.LIMIT,
-            user.id.get, security.id.get, 100, 100, price, "", "", "", None, None)
+            user.id.get, security.id.get, security.ticker, 100, 100, price, "", "", "", None, None)
 
           /*
            * Save the order to the DB
@@ -114,7 +115,7 @@ class Simulator extends Actor with ActorLogging {
            */
           val price = marketEvent.priceMultiplier(security.price, i)
           val o = Order(None, Exchange.NASDAQ, OrderType.BUY, OrderType.LIMIT,
-            user.id.get, security.id.get, 100, 100, price, "", "", "", None, None)
+            user.id.get, security.id.get, security.ticker, 100, 100, price, "", "", "", None, None)
 
           /*
            * Save the order to the DB
@@ -140,7 +141,7 @@ class Simulator extends Actor with ActorLogging {
       case MarketEvent(id, name, event_type, summary, description, MarketEventType.DIRECTION_UP, intensity, asset_class, region, sector, ticker, external_url, created_at, updated) => {
         for (i <- (1 to TRADES_PER_SIM_USER)) {
           val o = Order(None, Exchange.NASDAQ, OrderType.BUY, OrderType.MARKET,
-            user.id.get, security.id.get, 100, 100, 0, "", "", "", None, None)
+            user.id.get, security.id.get, security.ticker, 100, 100, 0, "", "", "", None, None)
 
           /*
            * Save the order to the DB
@@ -160,7 +161,7 @@ class Simulator extends Actor with ActorLogging {
       case MarketEvent(id, name, event_type, summary, description, MarketEventType.DIRECTION_DOWN, intensity, asset_class, region, sector, ticker, external_url, created_at, updated) => {
         for (i <- (1 to TRADES_PER_SIM_USER)) {
           val o = Order(None, Exchange.NASDAQ, OrderType.SELL, OrderType.MARKET,
-            user.id.get, security.id.get, 100, 100, 0, "", "", "", None, None)
+            user.id.get, security.id.get, security.ticker, 100, 100, 0, "", "", "", None, None)
 
           /*
            * Save the order to the DB
