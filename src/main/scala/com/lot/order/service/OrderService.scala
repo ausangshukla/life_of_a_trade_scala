@@ -23,6 +23,7 @@ import akka.actor.ActorRef
 import com.lot.order.model.Order
 import com.lot.security.model.Security
 import com.lot.order.model.OrderSec
+import com.lot.user.model.User
 
 trait OrderRestService extends BaseService {
 
@@ -54,20 +55,20 @@ trait OrderRestService extends BaseService {
     }
   }
 
-  val create = postJson {
+  def create(user:User) = postJson {
     path(REST_ENDPOINT) {
-      entity(as[Order]) { order =>
+      entity(as[Order]) { o =>
         {
-          logger.debug(s"1. Saving order $order")
+          logger.debug(s"Got order $o")
           complete({
             /*
              * Ensure the unfilled_qty is set to the quantity
              */
-            order.unfilled_qty = order.quantity
+            val order = o.copy(unfilled_qty = o.quantity, user_id=user.id.get)
             /*
              * Save to the DB
              */
-            logger.debug(s"2. Saving order $order")
+            logger.debug(s"Saving order $order")
             val savedOrder = dao.save(order)
 
             val preCheck: ActorRef = OrderPreCheck()
@@ -109,12 +110,12 @@ trait OrderRestService extends BaseService {
     }
   }
 
-  val endpoints =
+  def endpoints =
     auth {
       current_user =>
         {
           logger.info("current_user = " + current_user.email)
-          list ~ details ~ create ~ update ~ destroy
+          list ~ details ~ create(current_user) ~ update ~ destroy
         }
     }
 }

@@ -22,11 +22,11 @@ case class Order(id: Option[Long],
                  exchange: String,
                  buy_sell: String,
                  order_type: String,
-                 user_id: Long,
+                 user_id: Long = 0,
                  security_id: Long,
                  quantity: Double,
-                 var unfilled_qty: Double,
-                 price: Double,
+                 var unfilled_qty: Double = 0,
+                 price: Double = 0,
                  var pre_trade_check_status: String = "", // InadequateCurrentBalance
                  var trade_status: String = "", // Filled, PartiallyFilled
                  var status:String = "", //Active, Inactive, Cancelled 

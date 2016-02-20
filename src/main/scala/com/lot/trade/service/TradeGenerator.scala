@@ -16,6 +16,7 @@ import com.typesafe.config.Config
 import com.lot.user.service.UserManager
 import com.lot.user.service.UserManagerMessages.DeductBlockedAmount
 import akka.pattern.ask
+import com.lot.user.service.UserManagerMessages.DeductBlockedAmount
 
 class TradeGenerator(positionManager: ActorRef) extends Actor with ConfigurationModuleImpl with ActorLogging {
 
@@ -64,7 +65,7 @@ class TradeGenerator(positionManager: ActorRef) extends Actor with Configuration
       /*
        * Deduct the total_amount from the users blocked amount
        */
-      //userManager ! DeductBlockedAmount(tradeWithAmounts.user_id, tradeWithAmounts.total_amount)
+      userManager ! DeductBlockedAmount(tradeWithAmounts.user_id, trade.order_id, tradeWithAmounts.total_amount)
       /*
        * Save the trade
        */
