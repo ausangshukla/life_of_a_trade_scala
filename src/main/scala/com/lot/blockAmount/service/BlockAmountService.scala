@@ -11,6 +11,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
  */
 trait BlockAmountRestService extends BaseService {
   
+  val REST_ENDPOINT = "blockAmounts"
   /**
    * For JSON serialization/deserialization
    */
@@ -25,7 +26,7 @@ trait BlockAmountRestService extends BaseService {
    * Returns the list of blockAmounts
    */
   val list = getJson {
-    path("blockAmounts") {
+    path(REST_ENDPOINT) {
       complete(dao.list)
     }
   }
@@ -34,7 +35,7 @@ trait BlockAmountRestService extends BaseService {
    * Returns a specific blockAmount identified by the id
    */
   val details = getJson {
-    path("blockAmounts" / IntNumber) { id =>
+    path(REST_ENDPOINT / IntNumber) { id =>
       {
         complete(dao.get(id))
       }
@@ -45,7 +46,7 @@ trait BlockAmountRestService extends BaseService {
    * Creates a new blockAmount
    */
   val create = postJson {
-    path("blockAmounts") {
+    path(REST_ENDPOINT) {
       entity(as[BlockAmount]) { blockAmount =>
         {
           complete(dao.save(blockAmount))
@@ -58,7 +59,7 @@ trait BlockAmountRestService extends BaseService {
    * Updates an existing blockAmount identified by the id
    */
   val update = putJson {
-    path("blockAmounts" / IntNumber) { id =>
+    path(REST_ENDPOINT) {
       entity(as[BlockAmount]) { blockAmount =>
         {
           complete(dao.update(blockAmount))
@@ -71,7 +72,7 @@ trait BlockAmountRestService extends BaseService {
    * Deletes the blockAmount identified by the id
    */
   val destroy = deleteJson {
-    path("blockAmounts" / IntNumber) { id =>
+    path(REST_ENDPOINT / IntNumber) { id =>
 
       complete(dao.delete(id))
 

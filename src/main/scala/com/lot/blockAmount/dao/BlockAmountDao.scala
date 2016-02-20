@@ -30,7 +30,6 @@ object BlockAmountDao extends TableQuery(new BlockAmountTable(_)) with LazyLoggi
     val now = new DateTime()    
     val o: BlockAmount = blockAmount.copy(created_at = Some(now), updated_at = Some(now))
     logger.debug(s"Saving $blockAmount")
-    logger.debug(s"Converted $o")
     val action = insertQuery += o
     db.run(action)
   }
@@ -70,7 +69,7 @@ object BlockAmountDao extends TableQuery(new BlockAmountTable(_)) with LazyLoggi
     // update the updated_at timestamp
     val now = new DateTime();
     val new_blockAmount: BlockAmount = blockAmount.copy(updated_at = Some(now))
-
+    logger.debug(s"Saving $new_blockAmount")
     db.run(this.filter(_.id === blockAmount.id).update(new_blockAmount))
   }
   

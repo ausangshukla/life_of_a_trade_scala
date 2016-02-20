@@ -85,7 +85,7 @@ class MarketEventServiceTest extends BaseTest
     }
   }
 
-  "A MarketEventRestService" should s"update the MarketEvent on $REST_ENDPOINT" taggedAs(FailingTest) in {
+  "A MarketEventRestService" should s"update the MarketEvent on $REST_ENDPOINT"  in {
 
     /*
      * Create an entity
@@ -101,13 +101,34 @@ class MarketEventServiceTest extends BaseTest
 
     Put(s"/$REST_ENDPOINT", modified) ~> endpoints ~> check {
 
-      println(responseAs[String])
       Get(s"/$REST_ENDPOINT/${saved.id.get}") ~> endpoints ~> check {
         val dbEntity = wait(MarketEventDao.get(saved.id.get)).get
         val rest_response = responseAs[MarketEvent]
+        println(rest_response)
+        println(modified)
         assert(rest_response == modified.copy(created_at=dbEntity.created_at, updated_at=dbEntity.updated_at))
       }
 
+    }
+  }
+  
+   "A MarketEventRestService" should s"delete a MarketEvent on $REST_ENDPOINT"  in {
+
+    /*
+     * Create an entity
+     */
+    val marketEvent = MarketEventFactory.generate(name = "Name1", summary = "This is a test event")
+
+    val fSaved = MarketEventDao.save(marketEvent)
+    val saved = wait(fSaved)
+    
+    Delete(s"/$REST_ENDPOINT/${saved.id.get}") ~> endpoints ~> check {
+
+      println(responseAs[String])
+      
+      val saved = wait(MarketEventDao.get(1))
+      status.intValue should be (200)
+      assert(None == saved)
     }
   }
 

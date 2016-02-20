@@ -26,12 +26,14 @@ import com.lot.order.model.OrderSec
 
 trait OrderRestService extends BaseService {
 
+  val REST_ENDPOINT = "orders"
+  
   import com.lot.Json4sProtocol._
 
   val dao = OrderDao
 
   val list = getJson {
-    path("orders") {
+    path(REST_ENDPOINT) {
 
       complete {
         dao.list.map { seq =>
@@ -47,13 +49,13 @@ trait OrderRestService extends BaseService {
   }
 
   val details = getJson {
-    path("orders" / IntNumber) { id =>
+    path(REST_ENDPOINT / IntNumber) { id =>
       complete(dao.get(id))
     }
   }
 
   val create = postJson {
-    path("orders") {
+    path(REST_ENDPOINT) {
       entity(as[Order]) { order =>
         {
           logger.debug(s"1. Saving order $order")
@@ -84,7 +86,7 @@ trait OrderRestService extends BaseService {
   }
 
   val update = putJson {
-    path("orders" / IntNumber) { id =>
+    path(REST_ENDPOINT / IntNumber) { id =>
       entity(as[Order]) { order =>
         {
           complete({
@@ -100,7 +102,7 @@ trait OrderRestService extends BaseService {
   }
 
   val destroy = deleteJson {
-    path("orders" / IntNumber) { id =>
+    path(REST_ENDPOINT / IntNumber) { id =>
 
       complete(dao.delete(id))
 
