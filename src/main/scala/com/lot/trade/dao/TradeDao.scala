@@ -11,6 +11,8 @@ import com.lot.trade.model.Trade
 import com.lot.utils.DB._
 import scala.concurrent.ExecutionContext.Implicits.global
 import org.joda.time.DateTime
+import com.lot.user.model.User
+import com.lot.user.model.UserRoles
 object TradeDao extends TableQuery(new TradeTable(_)) with LazyLogging {
 
   /**
@@ -58,9 +60,9 @@ object TradeDao extends TableQuery(new TradeTable(_)) with LazyLogging {
     db.run(DBIO.seq(this.schema.create))
   }
 
-  def list = {
+  def list(current_user:User) = {
     val allTrades = for {
-      o <- this
+      o <- if(current_user.role == UserRoles.TRADER) this.filter(_.user_id === current_user.id.get) else this
     } yield (o)
     db.run(allTrades.sortBy(_.id.desc).result)
   }

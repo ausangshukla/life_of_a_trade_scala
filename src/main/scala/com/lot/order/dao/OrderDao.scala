@@ -14,6 +14,8 @@ import org.joda.time.DateTime
 import com.lot.order.model.OrderType
 import com.lot.security.model.SecurityTable
 import com.lot.security.model.Security
+import com.lot.user.model.User
+import com.lot.user.model.UserRoles
 
 object OrderDao extends TableQuery(new OrderTable(_)) with LazyLogging {
 
@@ -100,14 +102,13 @@ object OrderDao extends TableQuery(new OrderTable(_)) with LazyLogging {
     db.run(DBIO.seq(this.schema.create))
   }
 
-  def list: Future[Seq[(Order, Security)]] = {
+  def list(current_user:User): Future[Seq[Order]] = {
     val allOrders = for {
-      o <- this
-      sec <- TableQuery[SecurityTable] if o.security_id === sec.id
-    } yield (o, sec)
+      o <- if(current_user.role == UserRoles.TRADER) this.filter(_.user_id === current_user.id.get) else this
+    } yield (o)
 
     val sorted = allOrders.sortBy {
-      case (order, security) => order.id.desc
+      case order => order.id.desc
     }.result
 
     db.run(sorted)

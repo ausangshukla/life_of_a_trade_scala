@@ -33,18 +33,11 @@ trait OrderRestService extends BaseService {
 
   val dao = OrderDao
 
-  val list = getJson {
+  def list(current_user: User) = getJson {
     path(REST_ENDPOINT) {
 
       complete {
-        dao.list.map { seq =>
-          seq.map { os =>
-            {
-              //OrderSec(os._1, os._2)
-              os._1
-            }
-          }
-        }
+        dao.list(current_user)
       }
     }
 
@@ -116,7 +109,7 @@ trait OrderRestService extends BaseService {
       current_user =>
         {
           logger.info("current_user = " + current_user.email)
-          list ~ details ~ create(current_user) ~ update ~ destroy
+          list(current_user) ~ details ~ create(current_user) ~ update ~ destroy
         }
     }
 }

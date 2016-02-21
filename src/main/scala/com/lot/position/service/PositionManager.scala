@@ -127,7 +127,7 @@ class PositionManager extends Actor with ActorLogging {
          * as there is a unique key constraint on user_id & security_id
          * When this happens we retry the msg
          */
-          val position = Position(None, "", trade.security_id, trade.user_id, trade.quantity, trade.price, 0, None, None)
+          val position = Position(None, trade.ticker, trade.security_id, trade.user_id, trade.quantity, trade.price, 0, None, None)
           val saved = PositionDao.save(position)
           saved map {
             p => log.debug(s"Saved position $p")

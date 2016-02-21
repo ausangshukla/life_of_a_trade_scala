@@ -89,4 +89,5 @@ object UserRoles {
   val TRADER = "Trader"
   val OPS = "Ops"
   val SIM = "Simulation"
+  val GUEST = "Guest"
 }

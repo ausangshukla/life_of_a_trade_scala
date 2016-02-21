@@ -5,7 +5,7 @@ import com.lot.trade.dao.TradeDao
 import com.lot.trade.model.Trade
 import com.lot.trade.model.TradeJsonProtocol
 import scala.concurrent.ExecutionContext.Implicits.global
-
+import com.lot.user.model.User
 
 trait TradeRestService extends BaseService {
 
@@ -13,9 +13,9 @@ trait TradeRestService extends BaseService {
 
   val dao = TradeDao
 
-  val list = getJson {
+  def list(current_user: User) = getJson {
     path("trades") {
-      complete(dao.list)
+      complete(dao.list(current_user))
     }
   }
 
@@ -53,11 +53,16 @@ trait TradeRestService extends BaseService {
     }
   }
 
-  val endpoints =
-    list ~ details ~ create ~ update ~ destroy
+  def endpoints = auth {
+    current_user =>
+      {
+        logger.info("current_user = " + current_user.email)
+        list(current_user) ~ details ~ create ~ update ~ destroy
+      }
+  }
 
 }
 
 object TradeService extends TradeRestService {
-  
+
 }

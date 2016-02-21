@@ -11,6 +11,8 @@ import com.lot.position.model.Position
 import com.lot.utils.DB._
 import scala.concurrent.ExecutionContext.Implicits.global
 import org.joda.time.DateTime
+import com.lot.user.model.User
+import com.lot.user.model.UserRoles
 
 object PositionDao extends TableQuery(new PositionTable(_)) {
 
@@ -100,8 +102,11 @@ object PositionDao extends TableQuery(new PositionTable(_)) {
   /**
    * Returns all the position in the DB
    */
-  def list = {
-    val allPositions = for (o <- this) yield o
+  def list(current_user:User) = {
+    val allPositions = for {
+      o <- if(current_user.role == UserRoles.TRADER) this.filter(_.user_id === current_user.id.get) else this
+    } yield o
+    
     db.run(allPositions.result)
   }
   
