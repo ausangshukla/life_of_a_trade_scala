@@ -24,32 +24,44 @@ import com.lot.order.model.Order
 import com.lot.security.model.Security
 import com.lot.order.model.OrderSec
 import com.lot.user.model.User
+import com.lot.user.model.Authorize
 
 trait OrderRestService extends BaseService {
 
   val REST_ENDPOINT = "orders"
-  
+
   import com.lot.Json4sProtocol._
 
   val dao = OrderDao
 
   def list(current_user: User) = getJson {
     path(REST_ENDPOINT) {
-
-      complete {
-        dao.list(current_user)
+      /*
+       * Ensure we have access for this user
+       */
+      def access = Authorize.authorize(Authorize.LIST, current_user, None)
+      authorize(access) {
+        complete {
+          dao.list(current_user)
+        }
       }
     }
 
   }
 
-  val details = getJson {
+  def details(current_user:User) = getJson {
     path(REST_ENDPOINT / IntNumber) { id =>
-      complete(dao.get(id))
+      /*
+       * Ensure we have access for this user
+       */
+      def access = Authorize.authorize(Authorize.READ, current_user, None)
+      authorize(access) {
+        complete(dao.get(id))
+      }
     }
   }
 
-  def create(user:User) = postJson {
+  def create(current_user: User) = postJson {
     path(REST_ENDPOINT) {
       entity(as[Order]) { o =>
         {
@@ -58,7 +70,7 @@ trait OrderRestService extends BaseService {
             /*
              * Ensure the unfilled_qty is set to the quantity
              */
-            val order = o.copy(unfilled_qty = o.quantity, user_id=user.id.get)
+            val order = o.copy(unfilled_qty = o.quantity, user_id = current_user.id.get)
             /*
              * Save to the DB
              */
@@ -80,7 +92,7 @@ trait OrderRestService extends BaseService {
     }
   }
 
-  val update = putJson {
+  def update(current_user:User) = putJson {
     path(REST_ENDPOINT / IntNumber) { id =>
       entity(as[Order]) { order =>
         {
@@ -96,7 +108,7 @@ trait OrderRestService extends BaseService {
     }
   }
 
-  val destroy = deleteJson {
+  def destroy(current_user:User) = deleteJson {
     path(REST_ENDPOINT / IntNumber) { id =>
 
       complete(dao.delete(id))
@@ -109,11 +121,11 @@ trait OrderRestService extends BaseService {
       current_user =>
         {
           logger.info("current_user = " + current_user.email)
-          list(current_user) ~ details ~ create(current_user) ~ update ~ destroy
+          list(current_user) ~ details(current_user) ~ create(current_user) ~ update(current_user) ~ destroy(current_user)
         }
     }
 }
 
 object OrderService extends OrderRestService {
-  
+
 }

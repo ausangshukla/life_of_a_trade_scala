@@ -5,7 +5,7 @@ import com.lot.position.dao.PositionDao
 import com.lot.position.model.Position
 import com.lot.position.model.PositionJsonProtocol
 import scala.concurrent.ExecutionContext.Implicits.global
-
+import com.lot.user.model.User
 
 trait PositionRestService extends BaseService {
 
@@ -13,9 +13,9 @@ trait PositionRestService extends BaseService {
 
   val dao = PositionDao
 
-  val list = getJson {
+  def list(current_user: User) = getJson {
     path("positions") {
-      complete(dao.list)
+      complete(dao.list(current_user))
     }
   }
 
@@ -54,10 +54,16 @@ trait PositionRestService extends BaseService {
   }
 
   val endpoints =
-    list ~ details ~ create ~ update ~ destroy
+    auth {
+      current_user =>
+        {
+          logger.info("current_user = " + current_user.email)
+          list(current_user) ~ details ~ update
+        }
+    }
 
 }
 
 object PositionService extends PositionRestService {
-  
+
 }
