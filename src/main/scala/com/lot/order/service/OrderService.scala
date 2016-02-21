@@ -39,7 +39,7 @@ trait OrderRestService extends BaseService {
       /*
        * Ensure we have access for this user
        */
-      def access = Authorize.authorize(Authorize.LIST, current_user, None)
+      def access = Authorize.authorize(Authorize.LIST, current_user, Some(Order))
       authorize(access) {
         complete {
           dao.list(current_user)
@@ -49,14 +49,15 @@ trait OrderRestService extends BaseService {
 
   }
 
-  def details(current_user:User) = getJson {
+  def details(current_user: User) = getJson {
     path(REST_ENDPOINT / IntNumber) { id =>
       /*
        * Ensure we have access for this user
        */
-      def access = Authorize.authorize(Authorize.READ, current_user, None)
-      authorize(access) {
-        complete(dao.get(id))
+      val orderF = dao.get(id)
+      def access = Authorize.authorize(Authorize.READ, current_user, orderF)
+      checkAccess(access) {
+        complete(orderF)
       }
     }
   }
@@ -65,54 +66,70 @@ trait OrderRestService extends BaseService {
     path(REST_ENDPOINT) {
       entity(as[Order]) { o =>
         {
-          logger.debug(s"Got order $o")
-          complete({
-            /*
+          /*
+      	   * Ensure we have access for this user
+           */       
+          def access = Authorize.authorize(Authorize.CREATE, current_user, Some(o))
+          authorize(access) {
+            complete({
+              /*
              * Ensure the unfilled_qty is set to the quantity
              */
-            val order = o.copy(unfilled_qty = o.quantity, user_id = current_user.id.get)
-            /*
+              val order = o.copy(unfilled_qty = o.quantity, user_id = current_user.id.get)
+              /*
              * Save to the DB
              */
-            logger.debug(s"Saving order $order")
-            val savedOrder = dao.save(order)
+              logger.debug(s"Saving order $order")
+              val savedOrder = dao.save(order)
 
-            val preCheck: ActorRef = OrderPreCheck()
-            savedOrder.map { order =>
-              logger.debug(s"Precheck order $order")
-              preCheck ! NewOrder(order, new DateTime())
-            }
-            /*
+              val preCheck: ActorRef = OrderPreCheck()
+              savedOrder.map { order =>
+                logger.debug(s"Precheck order $order")
+                preCheck ! NewOrder(order, new DateTime())
+              }
+              /*
              * Return the saved but yet unmatched order
              */
-            savedOrder
-          })
+              savedOrder
+            })
+          }
         }
       }
     }
   }
 
-  def update(current_user:User) = putJson {
+  def update(current_user: User) = putJson {
     path(REST_ENDPOINT / IntNumber) { id =>
       entity(as[Order]) { order =>
         {
-          complete({
-            dao.update(order)
-            Exchange.exchanges.get(order.exchange).map { exchange =>
-              exchange ! ModifyOrder(order, new DateTime())
-            }
-            order
-          })
+          /*
+      	   * Ensure we have access for this user
+       		 */
+          def access = Authorize.authorize(Authorize.UPDATE, current_user, Some(order))
+          authorize(access) {
+            complete({
+              dao.update(order)
+              Exchange.exchanges.get(order.exchange).map { exchange =>
+                exchange ! ModifyOrder(order, new DateTime())
+              }
+              order
+            })
+          }
         }
       }
     }
   }
 
-  def destroy(current_user:User) = deleteJson {
+  def destroy(current_user: User) = deleteJson {
     path(REST_ENDPOINT / IntNumber) { id =>
-
-      complete(dao.delete(id))
-
+      /*
+       * Ensure we have access for this user
+       */
+      val orderF = dao.get(id)
+      def access = Authorize.authorize(Authorize.DELETE, current_user, orderF)
+      checkAccess(access) {
+        complete(dao.delete(id))
+      }
     }
   }
 
