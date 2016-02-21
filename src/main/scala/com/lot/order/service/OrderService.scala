@@ -34,12 +34,17 @@ trait OrderRestService extends BaseService {
 
   val dao = OrderDao
 
+  def checkAccess(access: String, current_user: User, id: Long) = {
+    val orderF = dao.get(id)
+    (orderF, Authorize.checkAccess(access, current_user, orderF))
+  }
+
   def list(current_user: User) = getJson {
     path(REST_ENDPOINT) {
       /*
        * Ensure we have access for this user
        */
-      def access = Authorize.authorize(Authorize.LIST, current_user, Some(Order))
+      def access = Authorize.checkAccess(Authorize.LIST, current_user, Some(Order))
       authorize(access) {
         complete {
           dao.list(current_user)
@@ -54,9 +59,8 @@ trait OrderRestService extends BaseService {
       /*
        * Ensure we have access for this user
        */
-      val orderF = dao.get(id)
-      def access = Authorize.authorize(Authorize.READ, current_user, orderF)
-      checkAccess(access) {
+      val (orderF, access) = checkAccess(Authorize.READ, current_user, id)
+      authorizeF(access) {
         complete(orderF)
       }
     }
@@ -67,15 +71,16 @@ trait OrderRestService extends BaseService {
       entity(as[Order]) { o =>
         {
           /*
+           * Ensure the unfilled_qty is set to the quantity
+           */
+          val order = o.copy(unfilled_qty = o.quantity, user_id = current_user.id.get)
+
+          /*
       	   * Ensure we have access for this user
-           */       
-          def access = Authorize.authorize(Authorize.CREATE, current_user, Some(o))
+           */
+          def access = Authorize.checkAccess(Authorize.CREATE, current_user, Some(order))
           authorize(access) {
             complete({
-              /*
-             * Ensure the unfilled_qty is set to the quantity
-             */
-              val order = o.copy(unfilled_qty = o.quantity, user_id = current_user.id.get)
               /*
              * Save to the DB
              */
@@ -105,8 +110,8 @@ trait OrderRestService extends BaseService {
           /*
       	   * Ensure we have access for this user
        		 */
-          def access = Authorize.authorize(Authorize.UPDATE, current_user, Some(order))
-          authorize(access) {
+          val (orderF, access) = checkAccess(Authorize.UPDATE, current_user, id)
+          authorizeF(access) {
             complete({
               dao.update(order)
               Exchange.exchanges.get(order.exchange).map { exchange =>
@@ -125,9 +130,8 @@ trait OrderRestService extends BaseService {
       /*
        * Ensure we have access for this user
        */
-      val orderF = dao.get(id)
-      def access = Authorize.authorize(Authorize.DELETE, current_user, orderF)
-      checkAccess(access) {
+      val (orderF, access) = checkAccess(Authorize.READ, current_user, id)
+      authorizeF(access) {
         complete(dao.delete(id))
       }
     }

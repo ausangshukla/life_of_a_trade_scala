@@ -27,7 +27,7 @@ object Json4sProtocol extends Json4sSupport {
 trait BaseService extends SimpleRoutingApp with CORSSupport with LazyLogging {
 
   /**
-   * The autheticator
+   * The authenticator
    */
   val authenticator = TokenAuthenticator[User]() { (token, uid) =>
     UserDao.findByEmail(uid)
@@ -41,14 +41,14 @@ trait BaseService extends SimpleRoutingApp with CORSSupport with LazyLogging {
   /**
    * Allows for future authorization
    */
-  def checkAccess(check: => Future[Boolean]): Directive0 =
+  def authorizeF(check: => Future[Boolean]): Directive0 =
     onSuccess(check).flatMap(authorize(_))
 
   /*
    * Json wrapped http methods follow
    */
 
-    def getJson(route: Route) = get {
+  def getJson(route: Route) = get {
     respondWithMediaType(MediaTypes.`application/json`) {
       route
     }

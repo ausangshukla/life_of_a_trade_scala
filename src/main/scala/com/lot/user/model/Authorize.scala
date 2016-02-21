@@ -18,23 +18,16 @@ import com.lot.trade.model.Trade
 
 object Authorize extends LazyLogging {
 
-  val READ = "Read"
-  val LIST = "List"
-  val CREATE = "Create"
-  val UPDATE = "Update"
-  val DELETE = "Delete"
-
-  val classOfUser = classOf[User]
-  val classOfPosition = classOf[Position]
-  val classOfTrade = classOf[Trade]
-  val classOfBlockAmount = classOf[BlockAmount]
-  val classOfOrder = classOf[Order]
-  val classOfsecurity = classOf[Security]
+  val READ = "details"
+  val LIST = "list"
+  val CREATE = "create"
+  val UPDATE = "update"
+  val DELETE = "delete"
 
   /**
    * The central authorize method
    */
-  def authorize(access: String, current_user: User, entity: Option[Any]): Boolean = {
+  def checkAccess(access: String, current_user: User, entity: Option[Any]): Boolean = {
     logger.debug(s"$access requested by ${current_user.id} : ${current_user.role} for $entity")
     current_user.role match {
       case UserRoles.ADMIN  => adminAccess(access, current_user, entity)
@@ -49,9 +42,9 @@ object Authorize extends LazyLogging {
   /**
    * The central authorize method
    */
-  def authorize(access: String, current_user: User, entityF: Future[Option[Any]]): Future[Boolean] = {
+  def checkAccess(access: String, current_user: User, entityF: Future[Option[Any]]): Future[Boolean] = {
     entityF.map { entity =>
-      authorize(access, current_user, entity)
+      checkAccess(access, current_user, entity)
     }
   }
 
