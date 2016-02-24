@@ -34,6 +34,10 @@ object TriggeredEventDao extends TableQuery(new TriggeredEventTable(_)) {
     val action = insertQuery += o
     db.run(action)
   }
+  
+  def first = {
+    db.run(this.result.headOption)
+  }
 
   /**
    * Returns the TriggeredEvent and the MarketEvent

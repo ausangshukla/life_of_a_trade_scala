@@ -35,6 +35,10 @@ object SecurityDao extends TableQuery(new SecurityTable(_)) {
   def get(id: Long) = {
     db.run(this.filter(_.id === id).result.headOption)
   }
+  
+  def first() = {
+    db.run(this.result.headOption)
+  }
 
   def findByTicker(ticker: String) = {
     db.run(this.filter(_.ticker === ticker).result.headOption)

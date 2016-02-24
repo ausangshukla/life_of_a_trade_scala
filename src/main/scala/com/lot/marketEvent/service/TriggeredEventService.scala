@@ -1,25 +1,23 @@
 package com.lot.marketEvent.service
 
 import scala.concurrent.ExecutionContext.Implicits.global
-
 import com.lot.BaseService
 import com.lot.Json4sProtocol
 import com.lot.marketEvent.dao.TriggeredEventDao
 import com.lot.marketEvent.model.MarketEvent
 import com.lot.marketEvent.model.TriggeredEvent
 import com.lot.utils.ConfigurationModuleImpl
-
 import akka.actor.ActorSystem
 import akka.actor.Props
 import akka.actor.actorRef2Scala
 import spray.httpx.marshalling.ToResponseMarshallable.isMarshallable
 import spray.routing.Directive.pimpApply
+import com.lot.utils.WebSocket
 
 /**
  * The service that provides the REST interface for TriggeredEvent
  */
-object TriggeredEventService extends BaseService  {
-
+object TriggeredEventService extends BaseService {
 
   /**
    * For JSON serialization/deserialization
@@ -79,7 +77,20 @@ object TriggeredEventService extends BaseService  {
     path("trigger_events") {
       entity(as[TriggeredEvent]) { triggeredEvent =>
         {
-          complete(dao.save(triggeredEvent))
+          complete({
+            /*
+             * Save it
+             */
+            val teF = dao.save(triggeredEvent)
+            teF.map { te =>
+              /*
+         		   * Push it to the web app
+           	   */
+              WebSocket.publishTriggerEvent(te)
+              te
+            }
+          })
+
         }
       }
     }

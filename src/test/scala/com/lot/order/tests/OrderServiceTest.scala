@@ -12,13 +12,18 @@ import com.lot.order.model.Order
 import spray.httpx.SprayJsonSupport._
 import scala.collection.mutable.ListBuffer
 import com.lot.test.FailingTest
+import com.lot.security.dao.SecurityDao
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 
 class OrderServiceTest extends BaseTest
     with ScalatestRouteTest
     with OrderRestService {
 
   val actorFactoryRef = system
-  val security_id = 10
+  val sec = Await.result(SecurityDao.first(), Duration.Inf)
+  val security_id = sec.get.id.get
+  
   
   import com.lot.order.model.OrderJsonProtocol._
 
