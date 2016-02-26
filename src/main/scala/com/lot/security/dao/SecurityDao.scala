@@ -14,7 +14,7 @@ import org.joda.time.DateTime
 import com.lot.marketEvent.model.MarketEvent
 import com.lot.marketEvent.model.MarketEvent
 
-object SecurityDao extends TableQuery(new SecurityTable(_)) {
+object SecurityDao extends TableQuery(new SecurityTable(_)) with LazyLogging {
 
   /**
    * Saves the Security to the DB
@@ -56,10 +56,11 @@ object SecurityDao extends TableQuery(new SecurityTable(_)) {
     db.run(this.filter(_.id === security.id).update(new_security))
   }
 
-  def updatePrice(security_id: Long, newPrice: Double) = {
+  def updatePrice(security_id: Long, newPrice: Double): Future[Int] = {
     // update the updated_at timestamp
+    logger.debug(s"updatePrice $security_id, $newPrice")
     val now = new DateTime();
-    db.run(this.filter(_.id === security_id).map(s => s.price) update (newPrice))
+    db.run( this.filter(_.id === security_id).map(s => s.price).update(newPrice) )
   }
 
   /**

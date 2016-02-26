@@ -13,6 +13,7 @@ import akka.actor.actorRef2Scala
 import spray.httpx.marshalling.ToResponseMarshallable.isMarshallable
 import spray.routing.Directive.pimpApply
 import com.lot.utils.WebSocket
+import com.lot.utils.TriggeredEventPublisher
 
 /**
  * The service that provides the REST interface for TriggeredEvent
@@ -86,7 +87,7 @@ object TriggeredEventService extends BaseService {
               /*
          		   * Push it to the web app
            	   */
-              WebSocket.publishTriggerEvent(te)
+              TriggeredEventPublisher.publishTriggerEvent(te)
               te
             }
           })
