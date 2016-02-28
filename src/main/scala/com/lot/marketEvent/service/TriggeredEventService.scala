@@ -14,6 +14,7 @@ import spray.httpx.marshalling.ToResponseMarshallable.isMarshallable
 import spray.routing.Directive.pimpApply
 import com.lot.utils.WebSocket
 import com.lot.utils.TriggeredEventPublisher
+import com.lot.marketEvent.model.TriggeredEventDTO
 
 /**
  * The service that provides the REST interface for TriggeredEvent
@@ -34,8 +35,12 @@ object TriggeredEventService extends BaseService {
    * Returns the list of triggeredEvents
    */
   val list = getJson {
-    path("trigger_events") {
-      complete(dao.list)
+    path("triggered_events") {
+      complete{
+        dao.list.map { list =>
+          list.map{elem=>TriggeredEventDTO(elem._1, elem._2)}
+        }
+      }
     }
   }
 
@@ -43,7 +48,7 @@ object TriggeredEventService extends BaseService {
    * Returns a specific triggeredEvent identified by the id
    */
   val details = getJson {
-    path("trigger_events" / IntNumber) { id =>
+    path("triggered_events" / IntNumber) { id =>
       {
         complete(dao.get(id))
       }
@@ -55,7 +60,7 @@ object TriggeredEventService extends BaseService {
    * TODO - ensure only admins can do this action
    */
   val simulate = postJson {
-    path("trigger_events/simulate") {
+    path("triggered_events/simulate") {
       entity(as[TriggeredEvent]) { triggeredEvent =>
         {
           dao.get(triggeredEvent.id.get).map { otm =>
@@ -75,7 +80,7 @@ object TriggeredEventService extends BaseService {
    * Creates a new triggeredEvent
    */
   val create = postJson {
-    path("trigger_events") {
+    path("triggered_events") {
       entity(as[TriggeredEvent]) { triggeredEvent =>
         {
           complete({
@@ -101,7 +106,7 @@ object TriggeredEventService extends BaseService {
    * Updates an existing triggeredEvent identified by the id
    */
   val update = putJson {
-    path("trigger_events" / IntNumber) { id =>
+    path("triggered_events" / IntNumber) { id =>
       entity(as[TriggeredEvent]) { triggeredEvent =>
         {
           complete(dao.update(triggeredEvent))
@@ -114,7 +119,7 @@ object TriggeredEventService extends BaseService {
    * Deletes the triggeredEvent identified by the id
    */
   val destroy = deleteJson {
-    path("trigger_events" / IntNumber) { id =>
+    path("triggered_events" / IntNumber) { id =>
 
       complete(dao.delete(id))
 

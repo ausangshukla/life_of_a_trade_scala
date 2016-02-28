@@ -104,7 +104,7 @@ object MarketEventType {
   val DIRECTION_UP = "Up"
 
   val INTENSITY_HIGH = "High"
-  val INTENSITY_MED = "Med"
+  val INTENSITY_MED = "Medium"
   val INTENSITY_LOW = "Low"
 
 }

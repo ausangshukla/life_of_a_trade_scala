@@ -14,6 +14,8 @@ import spray.json.DeserializationException
 import org.joda.time.format.ISODateTimeFormat
 import com.lot.utils.CustomJson
 
+case class TriggeredEventDTO(triggeredEvent:TriggeredEvent, marketEvent: MarketEvent)
+
 /**
  * The model to hold a triggered market event
  * Note when an event is triggered it will be displayed on the user screens
@@ -21,7 +23,7 @@ import com.lot.utils.CustomJson
  */
 case class TriggeredEvent(id: Option[Long],
                           market_event_id: Long,
-                          sent_to_sim: Boolean,
+                          sent_to_sim: Boolean = false,
                           created_at: Option[DateTime],
                           updated_at: Option[DateTime])
 
@@ -56,6 +58,9 @@ class TriggeredEventTable(tag: Tag) extends Table[TriggeredEvent](tag, "triggere
 /**
  * The JSON protocol
  */
+  
 object TriggeredEventJsonProtocol extends CustomJson {
   implicit val triggeredEventFormat = jsonFormat5(TriggeredEvent)
+  implicit val marketEventFormat = jsonFormat14(MarketEvent)
+  implicit val dtoFormat = jsonFormat2(TriggeredEventDTO)
 }
