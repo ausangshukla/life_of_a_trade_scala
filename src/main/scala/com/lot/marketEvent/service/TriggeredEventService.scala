@@ -60,7 +60,7 @@ object TriggeredEventService extends BaseService {
    * TODO - ensure only admins can do this action
    */
   val simulate = postJson {
-    path("triggered_events/simulate") {
+    path("triggered_events" / "simulate") {
       entity(as[TriggeredEvent]) { triggeredEvent =>
         {
           dao.get(triggeredEvent.id.get).map { otm =>
@@ -130,6 +130,6 @@ object TriggeredEventService extends BaseService {
    * The list of methods which are exposed as the endpoint for this service
    */
   val endpoints =
-    list ~ details ~ create ~ update ~ destroy
+    list ~ details ~ create ~ update ~ destroy ~ simulate
 
 }
