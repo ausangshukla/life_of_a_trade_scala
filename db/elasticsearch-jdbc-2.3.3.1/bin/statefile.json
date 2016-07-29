@@ -1,0 +1,24 @@
+{
+  "type" : "jdbc",
+  "jdbc" : {
+    "schedule" : "0 0-59 0-23 ? * *",
+    "password" : "root",
+    "index_settings" : {
+      "index" : {
+        "number_of_shards" : "1"
+      }
+    },
+    "index" : "lot_dev",
+    "statefile" : "statefile.json",
+    "metrics" : {
+      "lastexecutionstart" : "2016-07-29T07:01:00.861Z",
+      "lastexecutionend" : "2016-07-29T07:01:01.311Z",
+      "counter" : "30",
+      "enabled" : "true"
+    },
+    "type" : "securities",
+    "user" : "root",
+    "url" : "jdbc:mysql://localhost:3306/lot_dev",
+    "sql" : "select * from securities"
+  }
+}

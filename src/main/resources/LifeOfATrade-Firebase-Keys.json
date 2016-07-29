@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "lifeofatrade",
+  "private_key_id": "e12b82555f04a7b034c614608050d4dc7e33683d",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQC++zxVLMGWDQ30\nQNmJbKwsz6p+95Fvt6woJLDaqiclF9cGpXaAcahitPBj72ZVA+UNuVQ7mq4Ym0yQ\nslqOFwx/5LZ5gRDagDSSGsAfrf412Xgz/xDvl/uLBAjpO48CtA2azS3zruLsUIRN\n9Sxo+T8Vzs12B1KRsQQLYsQUMoxqYXyfsFzf/TnkG476F+wzA1ur2ZGvmBz4s9xP\n4cvA2zZpLaDW23bg1odLJv5kEHbZWxEBCmOAmEO9mmxIyI9NZP2oqngofEZlbZ8q\nWnOaMW7n9CF3pBJb7TT+cjcuCyECJb7tNKVJKkNt/x8HqZFVW7QUqnbaaxMYt6LV\ndxxEYjmXAgMBAAECggEBAJxTsE4UJZ36r5po3ugjgUfo8KmfYnftA8mURwOmVgaB\n3iv9kuOOpYOukjtrQfuDBaJXOoDTm4Be1qx2obM/YKbrgwYwRKhmWyHhLbSAyt4v\nVbpSJf3JDUj8k4K+ktBmq+Az5VJbrDo9qh7Z+nEu3JmwPvRHCCpjmGjtfoz913xX\nSBl3oNU58OXSs522ImZH7e/nHytQKRiLEUkWy7up0vf65cscFUI/3FW6XMHThFFK\na9jY68PMxpRDCGMmsnlO14vzT8jzUptno2q4zuvVBNHGxqtTolXy0RP4EV2e0IKm\nukMhxoMsaYVMnkT6x9ybGSnhvqcfhYFjlP3Euk3lp0ECgYEA3qQmnAmVIZx/hyOw\nfkOFrqZcvZpfg/DHA1wEmCi+vdw6r38P9VuMKs5pUUpzmld0RS3M5tqun6w21zcw\nm3aAbpxc+59W97y9FP0RZ0zQEW+3OatTUvWYelQnZKZHpTjk6sjK2j7wO2ka78QZ\nKrC0OUQlBMWgzc95RUzhoVynsPcCgYEA25i1fP47IaOTJcpD1DWezYZs0BnTGQZ0\nYFT4riKUuaIzKYK8KW4+0JNd8MSIwXltcgqVXzq2z7HEajgTUqz0N36+T13ODSEs\nvB6/mARi6baouXXcxJCtj9nP8ZMMfdEcnRAsruJ9Wl0Awxiq1GUpVH1jALOCf/Ws\niFU7h7rKNGECgYEA3g2yRGZ6Su+fcdVyrjwCFNLwJFrXcOywUPVxz6CzvQDttyNv\nczM/dWIxQFaVPhaDbIvllUn+aFqGx9fPrv5d0fQ5+OxO/P9NRqWwuequivV1NRtf\nG5q/3SIZuBTv2CYKivCBAXNMfrSxnPlkcGOVHJiOo1fIrfyD405uq1WSGrkCgYBv\neNGIJbX2mYZ0xHwyGRYH1pkd+j4Ckhg5XmjuXHeK1B+MjuTdUy1ny6cANYQGUpGQ\nNnck5DUwsVi3YsfMTCeclCYfO8sBNznyNNmlXXSolySHIKF01syEHVlFlBPfOmt/\n/1nvXOGtIVDluHvfXYrhbNT44ib4tcljW4DgoZ1LgQKBgQDJBqX6LT5jTV8IVv16\n5zjz2oDV+kIjbcLGtbHODIrxla7XvyPhQYpmfhtVsQ18aV2ZbwertERKG4Nviz+0\nbxINCGTfSY9N6/OYIJVoJ3o7gFF/b2fg2wpox3SxgGXK3vnJsUyi/hd7a6ldngzh\nXbbkXLtpVBZW+/Xa6BT8uqCRYg==\n-----END PRIVATE KEY-----\n",
+  "client_email": "lifeofatrade@appspot.gserviceaccount.com",
+  "client_id": "105673814584355910989",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/lifeofatrade%40appspot.gserviceaccount.com"
+}
