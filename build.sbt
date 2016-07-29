@@ -3,6 +3,8 @@ version       := "0.0.2"
 
 scalaVersion  := "2.11.6"
 
+cancelable in Global := true
+
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
 libraryDependencies ++= {
@@ -26,7 +28,6 @@ libraryDependencies ++= {
   	"org.joda" % "joda-convert" % "1.7",
     "com.typesafe" % "config" % "1.2.1",
     "com.h2database" % "h2" % "1.3.175",
-    "org.postgresql" % "postgresql" % "9.3-1100-jdbc41",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0",
     "ch.qos.logback" % "logback-classic" % "1.1.3",
     "org.slf4j" % "slf4j-nop" % "1.6.4",
@@ -36,7 +37,11 @@ libraryDependencies ++= {
     "org.scalactic" %% "scalactic" % "2.2.6",
     "org.scalatest" %% "scalatest" % "2.2.6" % "test",
     "org.scalacheck" %% "scalacheck" % "1.12.5" % "test",
-    "net.logstash.logback" % "logstash-logback-encoder" % "4.6"
+    "net.logstash.logback" % "logstash-logback-encoder" % "4.6",
+    "com.google.firebase" % "firebase-server-sdk" % "3.0.0",
+    "com.google.guava" % "guava" % "18.0",
+    "com.sksamuel.elastic4s" %% "elastic4s-core" % "2.3.0",
+    "com.sksamuel.elastic4s" %% "elastic4s-streams" % "1.7.4"
     
   )
   

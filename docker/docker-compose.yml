@@ -1,0 +1,40 @@
+version: '2'
+services:
+
+  mysql-service:
+    image: mysql:5.7
+    environment:
+     - MYSQL_ROOT_PASSWORD=root
+     - MYSQL_DATABASE=lot_dev
+    ports:
+     - 3306:3306
+    volumes:
+     - ../db/dump:/docker-entrypoint-initdb.d
+
+  elasticsearch-service:
+    image: elasticsearch
+    ports:
+     - 9200:9200
+     - 9300:9300
+    volumes:
+     - ../db/esdata:/usr/share/elasticsearch/data
+     
+  server:
+    image: hseeberger/scala-sbt
+    ports:
+     - 8000:8000
+    volumes:
+     - ..:/src
+     - /tmp:/share
+     - ~/.ivy:/root/.ivy
+     - ~/.ivy2:/root/.ivy2     
+     - ~/.sbt:/root/.sbt
+    links:
+     - mysql-service
+    working_dir: /src
+    command: sbt compile
+    command: sbt "run-main com.lot.boot.Boot"
+
+ 
+  
+    
