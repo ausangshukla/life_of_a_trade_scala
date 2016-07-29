@@ -7,7 +7,7 @@ import com.lot.security.model.Security
 
 object ESClient {
 
-  def init() {
+  def searchSecurity(term:String) {
 
     implicit object SecurityHitAs extends HitAs[Security] {
       override def as(hit: RichSearchHit): Security = {
@@ -25,7 +25,7 @@ object ESClient {
     val client = ElasticClient.transport(settings, uri)
 
     val results = client.execute {
-      search in "lot_dev" / "securities" query "IZIZ"
+      search in "lot_dev" / "securities" query term
     }.await
 
     val securities: Seq[Security] = results.as[Security]

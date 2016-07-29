@@ -12,7 +12,7 @@ import spray.routing.Directive.pimpApply
 trait CORSSupport extends Directives {
    private val CORSHeaders = List(
      `Access-Control-Allow-Methods`(GET, POST, PUT, DELETE, OPTIONS),
-     `Access-Control-Allow-Headers`("Origin, X-Requested-With, If-Modified-Since, Content-Type, Accept, Accept-Encoding, Accept-Language, Host, Referer, User-Agent, Authorization"),
+     `Access-Control-Allow-Headers`("Origin, X-Requested-With, x-session-token, If-Modified-Since, Content-Type, Accept, Accept-Encoding, Accept-Language, Host, Referer, User-Agent, Authorization"),
      `Access-Control-Allow-Credentials`(true)
    )
 

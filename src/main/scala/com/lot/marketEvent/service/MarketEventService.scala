@@ -61,7 +61,7 @@ trait MarketEventRestService extends BaseService {
    * Updates an existing marketEvent identified by the id
    */
   val update = putJson {
-    path(REST_ENDPOINT) { 
+    path(REST_ENDPOINT / IntNumber) { id =>
       entity(as[MarketEvent]) { marketEvent =>
         {
           complete(dao.update(marketEvent))
